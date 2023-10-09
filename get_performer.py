@@ -52,11 +52,8 @@ class GetPerformer(Performer):
                 handler = self.get_certain_exchange_rate
                 splitted_path = path.split("/")
                 currency_codes = splitted_path[-1]
-                baseCurrency = currency_codes[:3]
-                targetCurrency = currency_codes[3:]
                 args_dict = {}
-                args_dict["baseCurrency"] = baseCurrency
-                args_dict["targetCurrency"] = targetCurrency
+                args_dict["currency_codes"] = currency_codes
                 return handler, args_dict
 
             # если путь '/exchange?', то запрос идет на расчёт перевода определённого количества средств
@@ -83,10 +80,10 @@ class GetPerformer(Performer):
         if not attrs:
             return handler()
         else:
-            if len(attrs) == 1:
+            if len(attrs) == 1 and "code" in attrs:
                 return handler(attrs["code"])
-            elif len(attrs) == 2:
-                return handler(baseCurrency=attrs["baseCurrency"], targetCurrency=attrs["targetCurrency"])
+            elif len(attrs) == 1 and "currency_codes" in attrs:
+                return handler(currency_codes=attrs["currency_codes"])
             elif len(attrs) == 3:
                 return handler(attrs["from"], attrs["to"], attrs["amount"])
 

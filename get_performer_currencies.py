@@ -46,10 +46,10 @@ class GetPerformerCurrencies(GetPerformer):
 
             except sqlite3.IntegrityError:
                 response_code = 500
-                query_data = [f"Ошибка - {response_code} (например, база данных недоступна)"]
+                query_data = {"message": f"Ошибка - {response_code} (база данных недоступна)"}
         else:
             response_code = 500
-            query_data = [f"Ошибка - {response_code} (файла базы данных нет)"]
+            query_data = {"message": f"Ошибка - {response_code} (файла базы данных нет)"}
 
         # запишем данные из коллекции query_data в JSON-объект
         query_data = self.dumps_to_json(query_data)
@@ -102,7 +102,7 @@ class GetPerformerCurrencies(GetPerformer):
                     with sqlite3.connect(Config.db_file) as db:
                         cursor = db.cursor()
 
-                        # открываем файл с SQL-запросом на чтение таблицы Currencies (получение таблицы всех валют)
+                        # открываем файл с SQL-запросом на чтение таблицы Currencies
                         with open("db/GET_currency.txt", "r") as file:
                             query = file.read()
 
@@ -118,17 +118,17 @@ class GetPerformerCurrencies(GetPerformer):
                             # теперь необходимо вызвать метод, который преобразует полученные данные в нужный нам словарь
                             query_data = self.convert_query_data_certain_currency(column_names, query_data)
 
-                        # иначе если результат SQL-запроса пуст, то  response_code = 404
+                        # иначе если результат SQL-запроса пуст, то response_code = 404
                         else:
                             response_code = 404
-                            query_data = [f"Ошибка - Валюта не найдена - {response_code}"]
+                            query_data = {"message": f"Ошибка - Валюта не найдена - {response_code}"}
 
                 except sqlite3.IntegrityError:
                     response_code = 500
-                    query_data = [f"Ошибка - {response_code} (например, база данных недоступна)"]
+                    query_data = {"message": f"Ошибка - {response_code} (база данных недоступна)"}
             else:
                 response_code = 500
-                query_data = [f"Ошибка - {response_code} (файла базы данных нет)"]
+                query_data = {"message": f"Ошибка - {response_code} (файла базы данных нет)"}
 
         # запишем данные из коллекции query_data в JSON-объект
         query_data = self.dumps_to_json(query_data)
