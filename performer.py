@@ -30,3 +30,12 @@ class Performer:
         """
         json_data = json.dumps(data, indent=4, ensure_ascii=False)
         return json_data
+
+    def loads_from_json(self, data):
+        """
+        Метод берет какие-либо данные из формата JSON - и преобразует их в словарь или список
+        :param data: JSON-объект
+        :return: словарь или список
+        """
+        json_data = json.loads(data)
+        return json_data

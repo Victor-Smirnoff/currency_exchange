@@ -1,0 +1,11 @@
+SELECT * FROM exchangeRates
+WHERE 
+BaseCurrencyId = (
+SELECT ID as baseCurrency_ID FROM Currencies
+WHERE Code == ?
+)
+AND
+TargetCurrencyId = (
+SELECT ID as targetCurrency_ID FROM Currencies
+WHERE Code == ?
+)

@@ -85,7 +85,7 @@ class GetPerformer(Performer):
             elif len(attrs) == 1 and "currency_codes" in attrs:
                 return handler(currency_codes=attrs["currency_codes"])
             elif len(attrs) == 3:
-                return handler(attrs["from"], attrs["to"], attrs["amount"])
+                return handler(currency_from=attrs["from"], currency_to=attrs["to"], amount=attrs["amount"])
 
     def raise_NotImplementedError(self):
         raise NotImplementedError

@@ -94,7 +94,7 @@ class GetPerformerCurrencies(GetPerformer):
         """
         if not currency_code:
             response_code = 400
-            query_data = [f"Код валюты отсутствует в адресе - {response_code}"]
+            query_data = {"message": f"Код валюты отсутствует в адресе - {response_code}"}
         else:
             # проверить наличие файла базы данных перед созданием подключения
             if os.path.exists(Config.db_file):
@@ -139,7 +139,7 @@ class GetPerformerCurrencies(GetPerformer):
         """
         Метод выполняет преобразование кортежа данных из БД в словарь для вывода его в response
         :param column_names: список названий колонок
-        :param query_data: список кортежей с данными
+        :param query_data: кортеж с данными из БД
         :return: данные в виде словаря
         """
         if query_data:

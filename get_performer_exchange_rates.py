@@ -1,5 +1,6 @@
 import sqlite3
 import os
+from decimal import Decimal, getcontext
 from get_performer import GetPerformer
 from config import Config
 
@@ -213,3 +214,78 @@ class GetPerformerExchangeRates(GetPerformer):
             result[correct_names[i]] = query_data[i]
 
         return result
+
+    def get_currency_exchange(self, currency_from, currency_to, amount):
+        """
+        Метод принимает в обработку запрос на расчёт перевода определённого количества средств из одной валюты в другую
+        :param currency_from: из какой валюты перевод (базовая валюта)
+        :param currency_to: в какую валюту перевод (таргет валюта)
+        :param amount: количество базовой валюты
+        :return: кортеж из двух элементов
+        индекс 0 - код HTTP ответа
+        индекс 1 - данные ответа
+        """
+        getcontext().prec = 7 # устанавливаем точность числа в 7 знаков
+        amount = Decimal(amount)
+        # складываем коды валют в единую строку для запроса прямого курса
+        currency_codes = currency_from + currency_to
+        # пробуем получить данные по этому курсу валют
+        response_code, query_data = self.get_certain_exchange_rate(currency_codes)
+        # если ответ положительный, то умножаем количество на rate, добавляем это в словарь и возвращаем результат
+        if response_code == 200:
+            query_data = self.loads_from_json(query_data)
+            query_data["amount"] = str(amount)
+            convertedAmount = Decimal(query_data["rate"]) * amount
+            query_data["convertedAmount"] = str(convertedAmount.quantize(Decimal('1.00'))) #  округление до 2 цифр в дробной части
+            query_data = self.dumps_to_json(query_data)
+            return (response_code, query_data)
+        else:
+            # пробуем взять обратный курс
+            reversed_currency_codes = currency_to + currency_from
+            # пробуем получить данные по этому курсу валют
+            response_code, query_data = self.get_certain_exchange_rate(reversed_currency_codes)
+            # если ответ положительный, то умножаем количество на 1/rate, добавляем это в словарь и возвращаем результат
+            if response_code == 200:
+                query_data = self.loads_from_json(query_data)
+                query_data["amount"] = str(amount)
+                convertedAmount = (1 / Decimal(query_data["rate"])) * amount
+                query_data["convertedAmount"] = str(convertedAmount.quantize(Decimal('1.00'))) #  округление до 2 цифр в дробной части
+
+                # здесь надо ещё поменять местами значения baseCurrency и targetCurrency,
+                # потому что в результате выбора обратного курса они поменялись местами
+                baseCurrency_data = query_data["targetCurrency"]
+                targetCurrency_data = query_data["baseCurrency"]
+                query_data["baseCurrency"] = baseCurrency_data
+                query_data["targetCurrency"] = targetCurrency_data
+
+                query_data = self.dumps_to_json(query_data)
+                return (response_code, query_data)
+
+        # если пришли сюда и ничего не вернули, то пробуем пройти по третьему сценарию
+        USD_A = "USD" + currency_from
+        USD_B = "USD" + currency_to
+        response_code_USD_A, query_data_USD_A = self.get_certain_exchange_rate(USD_A)
+        response_code_USD_B, query_data_USD_B = self.get_certain_exchange_rate(USD_B)
+        # если существуют валютные пары USD-A и USD-B, то считаем кросс курс через USD
+        if response_code_USD_A == response_code_USD_B == 200:
+            query_data = {}
+            query_data_USD_A = self.loads_from_json(query_data_USD_A)
+            query_data_USD_B = self.loads_from_json(query_data_USD_B)
+            baseCurrency_data = query_data_USD_A["targetCurrency"]
+            targetCurrency_data = query_data_USD_B["targetCurrency"]
+            query_data["baseCurrency"] = baseCurrency_data
+            query_data["targetCurrency"] = targetCurrency_data
+            rate = Decimal(query_data_USD_B["rate"]) / Decimal(query_data_USD_A["rate"])
+            query_data["amount"] = str(amount)
+            query_data["rate"] = str(rate)
+            convertedAmount = rate * amount
+            query_data["convertedAmount"] = str(convertedAmount.quantize(Decimal('1.00'))) #  округление до 2 цифр в дробной части
+
+            response_code = response_code_USD_A
+            query_data = self.dumps_to_json(query_data)
+            return (response_code, query_data)
+
+        # если пришли сюда и ничего не вернули, то возвращаем message Валюта не найдена
+        response_code = 404
+        query_data = {"message": f"Ошибка {response_code} - Валюта не найдена"}
+        return (response_code, query_data)
