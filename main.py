@@ -5,6 +5,7 @@ from config import Config
 from get_performer_currencies import GetPerformerCurrencies
 from get_performer_exchange_rates import GetPerformerExchangeRates
 from post_performer_currencies import PostPerformerCurrencies
+from post_performer_exchange_rates import PostPerformerExchangeRates
 
 
 class HttpRequestHandler(BaseHTTPRequestHandler):
@@ -48,6 +49,10 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         data_dict = self.get_form_fields()
         handler = self.choose_post_handler(data_dict)
         response_code, query_data = handler.perform_handling(data_dict)
+        self.send_response(response_code)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+        self.wfile.write(query_data.encode())
 
     def get_form_fields(self):
         """
@@ -73,8 +78,8 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         """
         if self.path == Config.currencies:
             handler = PostPerformerCurrencies(self.path)
-        # if self.path == Config.exchangeRates:
-        #     handler = PostPerformerExchangeRates(self.path)
+        if self.path == Config.exchangeRates:
+            handler = PostPerformerExchangeRates(self.path)
 
         return handler
 

@@ -42,7 +42,7 @@ class PostPerformerCurrencies(PostPerformer):
                             query = file.read()
 
                         try:
-                            cursor.execute(query, (currency_name, currency_code, currency_sign))
+                            cursor.execute(query, (currency_code, currency_name, currency_sign))
                             db.commit()
                             response_code = 200
                             with open("db/GET_currency.txt", "r") as file:
