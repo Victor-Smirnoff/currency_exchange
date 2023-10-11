@@ -1,5 +1,5 @@
-# Игнорировать все файлы, кроме .py, .txt и .db
-*
-!*.py
-!*.txt
-!*.db
+bruno/
+.idea/
+__pycache__/
+3. Materils for currency exchange/
+venv/
