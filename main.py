@@ -4,6 +4,7 @@ import urllib.parse
 from config import Config
 from get_performer_currencies import GetPerformerCurrencies
 from get_performer_exchange_rates import GetPerformerExchangeRates
+from patch_performer_exchange_rates import PatchPerformerExchangeRates
 from post_performer_currencies import PostPerformerCurrencies
 from post_performer_exchange_rates import PostPerformerExchangeRates
 
@@ -47,7 +48,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         :return: ответ на запрос
         """
         data_dict = self.get_form_fields()
-        handler = self.choose_post_handler(data_dict)
+        handler = self.choose_post_handler()
         response_code, query_data = handler.perform_handling(data_dict)
         self.send_response(response_code)
         self.send_header('Content-type', 'application/json')
@@ -71,7 +72,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
 
         return data_dict
 
-    def choose_post_handler(self, data_dict):
+    def choose_post_handler(self):
         """
         Метод выбирает обработчик в зависимости от пути запроса
         :return: объект класса обработчика
@@ -83,6 +84,28 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
 
         return handler
 
+    def do_PATCH(self):
+        """
+        Метод обрабатывает запросы PATCH
+        :return: ответ на запрос
+        """
+        data_dict = self.get_form_fields()
+        handler = self.choose_patch_handler()
+        response_code, query_data = handler.perform_handling(data_dict)
+        self.send_response(response_code)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+        self.wfile.write(query_data.encode())
+
+    def choose_patch_handler(self):
+        """
+        Метод выбирает обработчик PATCH запроса
+        :return: функция обработчик
+        """
+        if self.path.startswith(Config.exchangeRate):
+            handler = PatchPerformerExchangeRates(self.path)
+
+        return handler
 
 
 
