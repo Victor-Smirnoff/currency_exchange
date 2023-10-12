@@ -153,7 +153,7 @@ class GetPerformerExchangeRates(GetPerformer):
         # если коды не переданы или длина передаваемой строки не равно 6 символам
         if not currency_codes or len(currency_codes) != 6:
             response_code = 400
-            query_data = {"message": f"Ошибка - {response_code} (Коды валют пары отсутствуют в адресе)"}
+            query_data = {"message": f"Ошибка - {response_code} (Коды валют пары отсутствуют в адресе или длина двух кодов валют не равна 6)"}
         else:
             baseCurrency = currency_codes[:3]
             targetCurrency = currency_codes[3:]
@@ -257,6 +257,9 @@ class GetPerformerExchangeRates(GetPerformer):
                 targetCurrency_data = query_data["baseCurrency"]
                 query_data["baseCurrency"] = baseCurrency_data
                 query_data["targetCurrency"] = targetCurrency_data
+                # а также обновить обменный курс, так как берем обратный
+                converted_rate = 1 / Decimal(query_data["rate"])
+                query_data["rate"] = str(converted_rate.quantize(Decimal('1.000000')))
 
                 query_data = self.dumps_to_json(query_data)
                 return (response_code, query_data)
@@ -287,5 +290,6 @@ class GetPerformerExchangeRates(GetPerformer):
 
         # если пришли сюда и ничего не вернули, то возвращаем message Валюта не найдена
         response_code = 404
-        query_data = {"message": f"Ошибка {response_code} - Валюта не найдена"}
+        query_data = {"message": f"Ошибка {response_code} - Обменный курс {currency_from}-{currency_to} не найден"}
+        query_data = self.dumps_to_json(query_data)
         return (response_code, query_data)

@@ -34,10 +34,13 @@ class PatchPerformerExchangeRates(PatchPerformer):
         """
         baseCurrencyCode = currency_codes[:3]
         targetCurrencyCode = currency_codes[3:]
-        # если коды не переданы или длина передаваемой строки не равно 6 символам
+        # если коды не переданы или длина передаваемой строки не равно 6 символам или не передан rate
         if not currency_codes or len(currency_codes) != 6:
             response_code = 400
-            query_data = {"message": f"Ошибка - {response_code} (Отсутствует нужное поле формы)"}
+            query_data = {"message": f"Ошибка - {response_code} (Отсутствует нужное поле формы - коды валют в адресе запроса {self.path})"}
+        elif not rate:
+            response_code = 400
+            query_data = {"message": f"Ошибка - {response_code} (Отсутствует нужное поле формы - 'rate')"}
         else:
             # проверить наличие файла базы данных перед созданием подключения
             if os.path.exists(Config.db_file):
@@ -62,7 +65,7 @@ class PatchPerformerExchangeRates(PatchPerformer):
                         get_exchange_rate = GetPerformerExchangeRates(self.path)
                         response_code, query_data = get_exchange_rate.get_certain_exchange_rate(currency_codes)
                         if response_code == 404:
-                            query_data = {"message": f"Ошибка: Валютная пара отсутствует в базе данных - {response_code}"}
+                            query_data = {"message": f"Ошибка: Валютная пара {baseCurrencyCode}-{targetCurrencyCode} отсутствует в базе данных - {response_code}"}
                         else:
                             return (response_code, query_data)
 

@@ -15,7 +15,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
     do_GET,
     do_POST,
     do_PATCH,
-    do_DELETE
+    do_DELETE - not performed
     """
 
     def do_GET(self):
