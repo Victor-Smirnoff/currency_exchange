@@ -10,7 +10,7 @@ class Config:
     """
 
     # ссылка на путь к файлу базы данных
-    db_file = "db/database.db"
+    db_file = "../db/database.db"
 
     # Получение списка валют
     currencies: str = "/currencies"
