@@ -4,7 +4,7 @@ from crud_repository import CrudRepository
 class CurrencyRepository(CrudRepository):
     """
     Класс для выполнения основных действий над базой данных в таблице Currency
-    (добавляется методя для получения данных одной валюты по её коду)
+    (добавляется метод для получения данных одной валюты по её коду)
     """
     def find_by_code(self, code):
         """
