@@ -16,6 +16,8 @@ class DaoCurrencyRepository(CurrencyRepository):
         Это метод Read	SELECT
         :param currency_id: id валюты
         :return: объект с данными из БД
+        Это либо объект класса Currency (данные по валюте)
+        Либо это объект класса ErrorResponse (код ошибки и сообщение об ошибке)
         """
         try:
             with sqlite3.connect(Config.db_file) as db:
@@ -41,12 +43,13 @@ class DaoCurrencyRepository(CurrencyRepository):
 
                     query_data = Currency(ID, FullName, Code, Sign)
 
-                # иначе если результат SQL-запроса пуст, то response_code = 404
+                # иначе если результат SQL-запроса пуст, то response_code = 404. формируем объект класса ErrorResponse
                 else:
                     response_code = 404
                     message = f"Ошибка - Валюта не найдена - {response_code}"
                     query_data = ErrorResponse(response_code, message)
 
+        # иначе если БД недоступна, то response_code = 500. формируем объект класса ErrorResponse
         except sqlite3.IntegrityError:
             response_code = 500
             message = f"Ошибка - {response_code} (например, база данных недоступна)"
