@@ -159,3 +159,53 @@ class DaoExchangeRepository(ExchangeRepository):
             query_data = ErrorResponse(response_code, message)
 
         return query_data
+
+    def save(self, baseCurrencyCode, targetCurrencyCode, rate):
+        """
+        Метод добавляет новый обменный курс в таблицу ExchangeRates
+        Это метод Create	INSERT
+        :param baseCurrencyCode: базвая валюта
+        :param targetCurrencyCode: целевая валюта
+        :param rate: обменный курс
+        :return: объект класса ExchangeRate если новый обменный курс был добавлен
+        или объект класса ErrorResponse если произошла ошибка при записи данных
+        """
+        currency_codes = baseCurrencyCode + targetCurrencyCode
+        # если коды не переданы или длина передаваемой строки не равно 6 символам
+        if not currency_codes or len(currency_codes) != 6:
+            response_code = 400
+            message = f"Ошибка - {response_code} (Отсутствует нужное поле формы)"
+            query_data = ErrorResponse(response_code, message)
+        else:
+            try:
+                with sqlite3.connect(Config.db_file) as db:
+                    cursor = db.cursor()
+
+                    # теперь необходимо по коду валюты получить её ID
+                    # открываем файл с SQL-запросом на чтение таблицы Currencies (взять ID валюты по её коду)
+                    with open("../db/GET_ID_of_currency_from_code.txt", "r") as file:
+                        query = file.read()
+
+                    BaseCurrencyId = cursor.execute(query, (baseCurrencyCode,)).fetchone()[0]
+                    TargetCurrencyId = cursor.execute(query, (targetCurrencyCode,)).fetchone()[0]
+
+                    # открываем файл с SQL-запросом на чтение таблицы ExchangeRates (добавление нового обменного курса)
+                    with open("../db/POST_exchange_rate.txt", "r") as file:
+                        query = file.read()
+
+                    try:
+                        cursor.execute(query, (BaseCurrencyId, TargetCurrencyId, rate))
+                        db.commit()
+                        query_data = self.find_by_codes(currency_codes)
+
+                    except sqlite3.IntegrityError as e:
+                        response_code = 409
+                        message = f"Ошибка - {e}. Валютная пара с таким кодом уже существует - 409"
+                        query_data = ErrorResponse(response_code, message)
+
+            except sqlite3.IntegrityError:
+                response_code = 500
+                message = f"Ошибка - {response_code} (база данных недоступна)"
+                query_data = ErrorResponse(response_code, message)
+
+        return query_data
