@@ -33,13 +33,7 @@ class DaoCurrencyRepository(CurrencyRepository):
                 if query_data:
                     # список названий колонок из выполненного SQL-запроса.
                     column_names = [description[0] for description in cursor.description]
-                    correct_names = {"ID": "id", "FullName": "name", "Code": "code", "Sign": "sign"}
-                    result = {}
-                    for i in range(len(column_names)):
-                        name_from_db = column_names[i] # название колонки из БД
-                        correct_name = correct_names[name_from_db] # название ключа для формирования ответа согласно ТЗ
-                        result[correct_name] = query_data[i] # записываем данные ключ-значение в словарь
-
+                    result = self.get_correct_dict_currency(query_data, column_names)
                     ID, FullName, Code, Sign = result["id"], result["name"], result["code"], result["sign"]
                     query_data = Currency(ID, FullName, Code, Sign)
 
@@ -67,40 +61,57 @@ class DaoCurrencyRepository(CurrencyRepository):
         Это либо объект класса Currency (данные по валюте)
         Либо это объект класса ErrorResponse (код ошибки и сообщение об ошибке)
         """
-        try:
-            with sqlite3.connect(Config.db_file) as db:
-                cursor = db.cursor()
-
-                # открываем файл с SQL-запросом на чтение таблицы Currencies
-                with open("../db/GET_currency.txt", "r") as file:
-                    query = file.read()
-
-                query_data = cursor.execute(query, (code,)).fetchone()
-
-                # если результат SQL-запроса не пуст, то формируем объект класса Currency
-                if query_data:
-                    # список названий колонок из выполненного SQL-запроса.
-                    column_names = [description[0] for description in cursor.description]
-                    correct_names = {"ID": "id", "FullName": "name", "Code": "code", "Sign": "sign"}
-                    result = {}
-                    for i in range(len(column_names)):
-                        name_from_db = column_names[i] # название колонки из БД
-                        correct_name = correct_names[name_from_db] # название ключа для формирования ответа согласно ТЗ
-                        result[correct_name] = query_data[i] # записываем данные ключ-значение в словарь
-
-                    ID, FullName, Code, Sign = result["id"], result["name"], result["code"], result["sign"]
-                    query_data = Currency(ID, FullName, Code, Sign)
-
-                # иначе если результат SQL-запроса пуст, то response_code = 404. формируем объект класса ErrorResponse
-                else:
-                    response_code = 404
-                    message = f"Ошибка - Валюта не найдена - {response_code}"
-                    query_data = ErrorResponse(response_code, message)
-
-        # иначе если БД недоступна, то response_code = 500. формируем объект класса ErrorResponse
-        except sqlite3.IntegrityError:
-            response_code = 500
-            message = f"Ошибка - {response_code} (база данных недоступна)"
+        if not code:
+            response_code = 400
+            message = f"Ошибка - Код валюты отсутствует в адресе - {response_code}"
             query_data = ErrorResponse(response_code, message)
+        else:
+            try:
+                with sqlite3.connect(Config.db_file) as db:
+                    cursor = db.cursor()
+
+                    # открываем файл с SQL-запросом на чтение таблицы Currencies
+                    with open("../db/GET_currency.txt", "r") as file:
+                        query = file.read()
+
+                    query_data = cursor.execute(query, (code,)).fetchone()
+
+                    # если результат SQL-запроса не пуст, то формируем объект класса Currency
+                    if query_data:
+                        # список названий колонок из выполненного SQL-запроса.
+                        column_names = [description[0] for description in cursor.description]
+                        result = self.get_correct_dict_currency(query_data, column_names)
+                        ID, FullName, Code, Sign = result["id"], result["name"], result["code"], result["sign"]
+                        query_data = Currency(ID, FullName, Code, Sign)
+
+                    # иначе если результат SQL-запроса пуст, то response_code = 404. формируем объект класса ErrorResponse
+                    else:
+                        response_code = 404
+                        message = f"Ошибка - Валюта не найдена - {response_code}"
+                        query_data = ErrorResponse(response_code, message)
+
+            # иначе если БД недоступна, то response_code = 500. формируем объект класса ErrorResponse
+            except sqlite3.IntegrityError:
+                response_code = 500
+                message = f"Ошибка - {response_code} (база данных недоступна)"
+                query_data = ErrorResponse(response_code, message)
 
         return query_data
+
+    def get_correct_dict_currency(self, query_data, column_names):
+        """
+        Метод для получения словаря с данными по конкретной валюте
+        :param query_data: результат SQL запроса
+        :param column_names: названия колонок в SQL-таблице
+        :return: словарь с данными
+        """
+        correct_names = {"ID": "id", "FullName": "name", "Code": "code", "Sign": "sign"}
+        result = {}
+        for i in range(len(column_names)):
+            name_from_db = column_names[i]  # название колонки из БД
+            correct_name = correct_names[name_from_db]  # название ключа для формирования ответа согласно ТЗ
+            result[correct_name] = query_data[i]  # записываем данные ключ-значение в словарь
+        return result
+
+    def find_all(self):
+        pass
