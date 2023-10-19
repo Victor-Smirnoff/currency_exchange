@@ -14,3 +14,6 @@ class ErrorResponse:
         """
         self.code = code
         self.message = message
+
+    def __str__(self):
+        return str({"message": self.message, "code": self.code})
