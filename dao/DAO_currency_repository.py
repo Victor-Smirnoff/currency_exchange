@@ -181,3 +181,41 @@ class DaoCurrencyRepository(CurrencyRepository):
                 query_data = ErrorResponse(response_code, message)
 
         return query_data
+
+    def update(self, currency_name, currency_code, currency_sign):
+        """
+        Метод обновляет данные по конкретной валюте
+        Это метод Update	UPDATE
+        :param currency_name: Полное имя валюты
+        :param currency_code: Код валюты
+        :param currency_sign: Символ валюты
+        :return: объект с данными из БД (данные которые были добавлены в БД)
+        """
+        if not currency_name or not currency_code or not currency_sign:
+            response_code = 400
+            message = f"Ошибка - Отсутствует нужное поле формы - {response_code}"
+            query_data = ErrorResponse(response_code, message)
+        else:
+            try:
+                with sqlite3.connect(Config.db_file) as db:
+                    cursor = db.cursor()
+
+                    # открываем файл с SQL-запросом на изменение данных валюты в таблицу Currencies
+                    with open("../db/PATCH_currency.txt", "r") as file:
+                        query = file.read()
+
+                    currency = self.find_by_code(currency_code)
+                    if isinstance(currency, Currency):
+                        currency_id = currency.ID
+                        cursor.execute(query, (currency_code, currency_name, currency_sign, currency_id))
+                        db.commit()
+                        query_data = self.find_by_code(currency_code)
+                    else:
+                        query_data = self.find_by_code(currency_code)
+
+            except sqlite3.IntegrityError:
+                response_code = 500
+                message = f"Ошибка - {response_code} (база данных недоступна)"
+                query_data = ErrorResponse(response_code, message)
+
+        return query_data
