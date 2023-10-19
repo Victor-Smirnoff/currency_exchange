@@ -1,0 +1,7 @@
+DELETE FROM ExchangeRates
+WHERE TargetCurrencyId IN (
+    SELECT Currencies.ID
+    FROM Currencies
+    INNER JOIN ExchangeRates ON Currencies.ID = ExchangeRates.TargetCurrencyId
+    WHERE Currencies.Code = ?
+);

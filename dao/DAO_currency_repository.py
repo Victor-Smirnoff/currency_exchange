@@ -219,3 +219,45 @@ class DaoCurrencyRepository(CurrencyRepository):
                 query_data = ErrorResponse(response_code, message)
 
         return query_data
+
+    def delete(self, code):
+        """
+        Метод для удаления валюты из таблицы Currencies
+        :param code: Код валюты
+        :return: объект с данными из БД (данные которые были удалены из БД)
+        """
+        if not code:
+            response_code = 400
+            message = f"Ошибка - Код валюты отсутствует в адресе - {response_code}"
+            query_data = ErrorResponse(response_code, message)
+        else:
+            query_data = self.find_by_code(code)
+            if isinstance(query_data, Currency):
+                try:
+                    with sqlite3.connect(Config.db_file) as db:
+                        cursor = db.cursor()
+
+                        # открываем файл с SQL-запросом на удаление данных валюты из таблицы ExchangeRates
+                        with open("../db/DELETE_currency_from_ExchangeRates_base.txt", "r") as file:
+                            query = file.read()
+                            cursor.execute(query, (code,))
+                            db.commit()
+
+                        # открываем файл с SQL-запросом на удаление данных валюты из таблицы ExchangeRates
+                        with open("../db/DELETE_currency_from_ExchangeRates_target.txt", "r") as file:
+                            query = file.read()
+                            cursor.execute(query, (code,))
+                            db.commit()
+
+                        # открываем файл с SQL-запросом на удаление данных валюты из таблицы Currencies
+                        with open("../db/DELETE_currency.txt", "r") as file:
+                            query = file.read()
+                            cursor.execute(query, (code,))
+                            db.commit()
+
+                except sqlite3.IntegrityError:
+                    response_code = 500
+                    message = f"Ошибка - {response_code} (база данных недоступна)"
+                    query_data = ErrorResponse(response_code, message)
+
+        return query_data
