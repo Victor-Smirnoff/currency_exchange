@@ -114,4 +114,30 @@ class DaoCurrencyRepository(CurrencyRepository):
         return result
 
     def find_all(self):
-        pass
+        """
+        Метод возвращает список объектов класса Currency
+        :return: list
+        """
+        try:
+            with sqlite3.connect(Config.db_file) as db:
+                cursor = db.cursor()
+
+                # открываем файл с SQL-запросом на чтение таблицы Currencies (получение таблицы всех валют)
+                with open("../db/GET_currencies.txt", "r") as file:
+                    query = file.read()
+
+                query_data_tmp = cursor.execute(query).fetchall()
+                query_data = []
+                # список названий колонок из выполненного SQL-запроса
+                column_names = [description[0] for description in cursor.description]
+                for data in query_data_tmp:
+                    result = self.get_correct_dict_currency(data, column_names)
+                    ID, FullName, Code, Sign = result["id"], result["name"], result["code"], result["sign"]
+                    query_data.append(Currency(ID, FullName, Code, Sign))
+
+        except sqlite3.IntegrityError:
+            response_code = 500
+            message = f"Ошибка - {response_code} (база данных недоступна)"
+            query_data = ErrorResponse(response_code, message)
+
+        return query_data
