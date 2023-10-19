@@ -24,7 +24,7 @@ class DaoCurrencyRepository(CurrencyRepository):
                 cursor = db.cursor()
 
                 # открываем файл с SQL-запросом на чтение таблицы Currencies
-                with open("db/GET_currency_from_ID.txt", "r") as file:
+                with open("../db/GET_currency_from_ID.txt", "r") as file:
                     query = file.read()
 
                 query_data = cursor.execute(query, (currency_id,)).fetchone()
@@ -39,8 +39,8 @@ class DaoCurrencyRepository(CurrencyRepository):
                         name_from_db = column_names[i] # название колонки из БД
                         correct_name = correct_names[name_from_db] # название ключа для формирования ответа согласно ТЗ
                         result[correct_name] = query_data[i] # записываем данные ключ-значение в словарь
-                        ID, FullName, Code, Sign = result["id"], result["name"], result["code"], result["sign"]
 
+                    ID, FullName, Code, Sign = result["id"], result["name"], result["code"], result["sign"]
                     query_data = Currency(ID, FullName, Code, Sign)
 
                 # иначе если результат SQL-запроса пуст, то response_code = 404. формируем объект класса ErrorResponse
@@ -52,7 +52,12 @@ class DaoCurrencyRepository(CurrencyRepository):
         # иначе если БД недоступна, то response_code = 500. формируем объект класса ErrorResponse
         except sqlite3.IntegrityError:
             response_code = 500
-            message = f"Ошибка - {response_code} (например, база данных недоступна)"
+            message = f"Ошибка - {response_code} (база данных недоступна)"
             query_data = ErrorResponse(response_code, message)
 
         return query_data
+
+
+res = DaoCurrencyRepository()
+
+print(res.find_by_id(1))
