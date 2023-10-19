@@ -45,7 +45,7 @@ class DaoExchangeRepository(ExchangeRepository):
                     # иначе если результат SQL-запроса пуст, то response_code = 404
                     else:
                         response_code = 404
-                        message = f"Ошибка - Обменный курс для пары не найден - {response_code}"
+                        message = f"Ошибка - Обменный курс для пары {baseCurrency}-{targetCurrency} не найден - {response_code}"
                         query_data = ErrorResponse(response_code, message)
 
             except sqlite3.IntegrityError:
@@ -263,5 +263,49 @@ class DaoExchangeRepository(ExchangeRepository):
                 response_code = 500
                 message = f"Ошибка - {response_code} (база данных недоступна)"
                 query_data = ErrorResponse(response_code, message)
+
+        return query_data
+
+    def delete(self, baseCurrencyCode, targetCurrencyCode):
+        """
+        Метод для удаления обменного курса из таблицы ExchangeRates
+        Это метод Delete	DELETE
+        :return: объект класса ExchangeRate если обменный курс был удалён
+        или объект класса ErrorResponse если произошла ошибка при удалении данных
+        """
+        currency_codes = baseCurrencyCode + targetCurrencyCode
+        # если коды не переданы или длина передаваемой строки не равно 6 символам
+        if not currency_codes or len(currency_codes) != 6:
+            response_code = 400
+            message = f"Ошибка - {response_code} (Отсутствует нужное поле формы)"
+            query_data = ErrorResponse(response_code, message)
+        else:
+            query_data = self.find_by_codes(currency_codes)
+            if isinstance(query_data, ErrorResponse):
+                return query_data
+            else:
+                try:
+                    with sqlite3.connect(Config.db_file) as db:
+                        cursor = db.cursor()
+
+                        # теперь необходимо по коду валюты получить её ID
+                        # открываем файл с SQL-запросом на чтение таблицы Currencies (взять ID валюты по её коду)
+                        with open("../db/GET_ID_of_currency_from_code.txt", "r") as file:
+                            query = file.read()
+
+                        BaseCurrencyId = cursor.execute(query, (baseCurrencyCode,)).fetchone()[0]
+                        TargetCurrencyId = cursor.execute(query, (targetCurrencyCode,)).fetchone()[0]
+
+                        # открываем файл с SQL-запросом на чтение таблицы ExchangeRates (удаление обменного курса)
+                        with open("../db/DELETE_from_ExchangeRates.txt", "r") as file:
+                            query = file.read()
+
+                        cursor.execute(query, (BaseCurrencyId, TargetCurrencyId))
+                        db.commit()
+
+                except sqlite3.IntegrityError:
+                    response_code = 500
+                    message = f"Ошибка - {response_code} (база данных недоступна)"
+                    query_data = ErrorResponse(response_code, message)
 
         return query_data
