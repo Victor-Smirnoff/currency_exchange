@@ -18,3 +18,6 @@ class Currency:
         self.FullName = FullName
         self.Code = Code
         self.Sign = Sign
+
+    def __str__(self):
+        return str({"id": self.ID, "name": self.FullName, "code": self.Code, "sign": self.Sign})
