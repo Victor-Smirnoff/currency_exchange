@@ -124,3 +124,38 @@ class DaoExchangeRepository(ExchangeRepository):
             query_data = ErrorResponse(response_code, message)
 
         return query_data
+
+    def find_by_id(self, id):
+        """
+        Метод возвращает данные по одному конкретному курсу валют
+        Принимает айди обменного курса
+        :param id: айди обменного курса
+        :return: объект класса ExchangeRate или объект класса ErrorResponse
+        """
+        try:
+            with sqlite3.connect(Config.db_file) as db:
+                cursor = db.cursor()
+
+                # открываем файл с SQL-запросом на чтение таблицы ExchangeRates (получение таблицы всех валют)
+                with open("../db/GET_exchange_rate_from_ID.txt", "r") as file:
+                    query = file.read()
+
+                data = cursor.execute(query, (id,)).fetchone()
+
+                # если результат SQL-запроса не пуст, то формируем объект класса ExchangeRate
+                if data:
+                    ID, BaseCurrencyId, TargetCurrencyId, Rate = data[0], data[1], data[2], data[3]
+                    query_data = ExchangeRate(ID, BaseCurrencyId, TargetCurrencyId, Rate)
+
+                # иначе если результат SQL-запроса пуст, то response_code = 404
+                else:
+                    response_code = 404
+                    message = f"Ошибка {response_code} - Обменный курс для данного ID <{id}> не найден"
+                    query_data = ErrorResponse(response_code, message)
+
+        except sqlite3.IntegrityError:
+            response_code = 500
+            message = f"Ошибка - {response_code} (база данных недоступна)"
+            query_data = ErrorResponse(response_code, message)
+
+        return query_data
