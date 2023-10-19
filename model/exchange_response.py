@@ -3,7 +3,7 @@
 """
 
 
-class ErrorResponse:
+class ExchangeResponse:
     """
     Класс для хранения данных по расчёту перевода определённого количества средств из одной валюты в другую
     """
@@ -20,3 +20,11 @@ class ErrorResponse:
         self.rate = rate
         self.amount = amount
         self.convertedAmount = convertedAmount
+
+    def __str__(self):
+        return str({"baseCurrency": self.baseCurrency,
+                    "targetCurrency": self.targetCurrency,
+                    "rate": self.rate,
+                    "amount": self.amount,
+                    "convertedAmount": self.convertedAmount
+                    })

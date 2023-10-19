@@ -18,3 +18,10 @@ class ExchangeRate:
         self.BaseCurrencyId = BaseCurrencyId
         self.TargetCurrencyId = TargetCurrencyId
         self.Rate = Rate
+
+    def __str__(self):
+        return str({"ID": self.ID,
+                    "BaseCurrencyId": self.BaseCurrencyId,
+                    "TargetCurrencyId": self.TargetCurrencyId,
+                    "Rate": self.Rate
+                    })
