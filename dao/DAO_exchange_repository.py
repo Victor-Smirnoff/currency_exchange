@@ -97,3 +97,30 @@ class DaoExchangeRepository(ExchangeRepository):
                 query_data = ErrorResponse(response_code, message)
 
         return query_data
+
+    def find_all(self):
+        """
+        Метод для получения списка всех обменных курсов валют из таблицы ExchangeRates
+        :return: список с объектами класса ExchangeRate
+        """
+        try:
+            with sqlite3.connect(Config.db_file) as db:
+                cursor = db.cursor()
+
+                # открываем файл с SQL-запросом на чтение таблицы Currencies (получение таблицы всех валют)
+                with open("../db/GET_exchange_rates.txt", "r") as file:
+                    query = file.read()
+
+                query_data = []
+                result_data = cursor.execute(query).fetchall()
+                for data in result_data:
+                    ID, BaseCurrencyId, TargetCurrencyId, Rate = data[0], data[1], data[2], data[3]
+                    exchange_rate_object = ExchangeRate(ID, BaseCurrencyId, TargetCurrencyId, Rate)
+                    query_data.append(exchange_rate_object)
+
+        except sqlite3.IntegrityError:
+            response_code = 500
+            message = f"Ошибка - {response_code} (база данных недоступна)"
+            query_data = ErrorResponse(response_code, message)
+
+        return query_data
