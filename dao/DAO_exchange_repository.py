@@ -209,3 +209,59 @@ class DaoExchangeRepository(ExchangeRepository):
                 query_data = ErrorResponse(response_code, message)
 
         return query_data
+
+    def update(self, rate, currency_codes):
+        """Метод выполняет обработку PATCH запроса на обновление данных поля rate в таблице ExchangeRates
+        Это метод Update	UPDATE
+        :param rate: обменный курс
+        :param currency_codes: коды валют - Валютная пара задаётся идущими подряд кодами валют
+        :return: объект класса ExchangeRate если обменный курс был изменен
+        или объект класса ErrorResponse если произошла ошибка при записи данных
+        """
+        baseCurrencyCode = currency_codes[:3]
+        targetCurrencyCode = currency_codes[3:]
+        # если коды не переданы или длина передаваемой строки не равно 6 символам или не передан rate
+        if not currency_codes or len(currency_codes) != 6:
+            response_code = 400
+            message = f"Ошибка - {response_code} (Отсутствует нужное поле формы - коды валют в адресе запроса {'/exchangeRate/' + currency_codes})"
+            query_data = ErrorResponse(response_code, message)
+        elif not rate:
+            response_code = 400
+            message = f"Ошибка - {response_code} (Отсутствует нужное поле формы - 'rate')"
+            query_data = ErrorResponse(response_code, message)
+        else:
+            try:
+                with sqlite3.connect(Config.db_file) as db:
+                    cursor = db.cursor()
+
+                    # теперь необходимо по коду валюты получить её ID
+                    # открываем файл с SQL-запросом на чтение таблицы Currencies (взять ID валюты по её коду)
+                    with open("../db/GET_ID_of_currency_from_code.txt", "r") as file:
+                        query = file.read()
+
+                    BaseCurrencyId = cursor.execute(query, (baseCurrencyCode,)).fetchone()[0]
+                    TargetCurrencyId = cursor.execute(query, (targetCurrencyCode,)).fetchone()[0]
+
+                    # открываем файл с SQL-запросом на чтение для изменения существующего обменного курса таблицы ExchangeRates
+                    with open("../db/PATCH_exchange_rate.txt", "r") as file:
+                        query = file.read()
+
+                    # пробуем поменять обменный курс
+                    cursor.execute(query, (rate, BaseCurrencyId, TargetCurrencyId))
+                    db.commit()
+
+                    # если обменный курс был успешно изменён, то получаем данные из таблицы методом self.find_by_codes()
+                    query_data = self.find_by_codes(currency_codes)
+
+                    # если тип данных у переменной query_data является ErrorResponse (то есть ошибка)
+                    if isinstance(query_data, ErrorResponse):
+                        response_code = 404
+                        message = f"Ошибка: Валютная пара {baseCurrencyCode}-{targetCurrencyCode} отсутствует в базе данных - {response_code}"
+                        query_data = ErrorResponse(response_code, message)
+
+            except sqlite3.IntegrityError:
+                response_code = 500
+                message = f"Ошибка - {response_code} (база данных недоступна)"
+                query_data = ErrorResponse(response_code, message)
+
+        return query_data
