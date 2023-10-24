@@ -41,6 +41,14 @@ class ExchangeService(DaoExchangeRepository):
         return response
 
     def get_direct_course(self, currency_from, currency_to, amount):
+        """
+        Метод пытается найти прямой обменный курс, если находит, то возвращает объект класса ExchangeResponse
+        или объект класса ErrorResponse - если нет прямого обменного курса
+        :param currency_from: из какой валюты перевод (базовая валюта)
+        :param currency_to: в какую валюту перевод (таргет валюта)
+        :param amount: количество базовой валюты
+        :return: объект класса ExchangeResponse или объект класса ErrorResponse
+        """
         getcontext().prec = 7 # устанавливаем точность числа в 7 знаков
         amount = Decimal(amount)
         # складываем коды валют в единую строку для запроса прямого курса
@@ -61,5 +69,32 @@ class ExchangeService(DaoExchangeRepository):
         else:
             return response
 
-
-
+    def get_reverse_course(self, currency_from, currency_to, amount):
+        """
+        Метод пытается найти обратный обменный курс, если находит, то возвращает объект класса ExchangeResponse
+        или объект класса ErrorResponse - если нет обратного обменного курса
+        :param currency_from: из какой валюты перевод (базовая валюта)
+        :param currency_to: в какую валюту перевод (таргет валюта)
+        :param amount: количество базовой валюты
+        :return: объект класса ExchangeResponse или объект класса ErrorResponse
+        """
+        getcontext().prec = 7 # устанавливаем точность числа в 7 знаков
+        amount = Decimal(amount)
+        # складываем коды валют в единую строку для запроса прямого курса
+        reversed_currency_codes = currency_to + currency_from
+        # пробуем получить данные по этому курсу валют
+        response = self.find_by_codes(reversed_currency_codes)
+        if isinstance(response, ExchangeRate):
+            DAO_currency_repository = DaoCurrencyRepository()
+            base_currency_id = response.TargetCurrencyId # base_currency_id будет в обратном курсе ссылаться на TargetCurrencyId
+            target_currency_id = response.BaseCurrencyId # target_currency_id будет в обратном курсе ссылаться на BaseCurrencyId
+            rate = 1 / Decimal(response.Rate)
+            rate = str(rate.quantize(Decimal('1.000000')))
+            converted_amount = (1 / Decimal(rate)) * amount
+            converted_amount = str(converted_amount.quantize(Decimal('1.00')))  #  округление до 2 цифр в дробной части
+            base_currency = DAO_currency_repository.find_by_id(base_currency_id)
+            target_currency = DAO_currency_repository.find_by_id(target_currency_id)
+            response = ExchangeResponse(base_currency, target_currency, rate, converted_amount)
+            return response
+        else:
+            return response
