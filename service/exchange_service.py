@@ -64,7 +64,8 @@ class ExchangeService(DaoExchangeRepository):
             converted_amount = str(converted_amount.quantize(Decimal('1.00')))  #  округление до 2 цифр в дробной части
             base_currency = DAO_currency_repository.find_by_id(base_currency_id)
             target_currency = DAO_currency_repository.find_by_id(target_currency_id)
-            response = ExchangeResponse(base_currency, target_currency, rate, converted_amount)
+            amount = str(amount)
+            response = ExchangeResponse(base_currency, target_currency, rate, amount, converted_amount)
             return response
         else:
             return response
@@ -94,7 +95,8 @@ class ExchangeService(DaoExchangeRepository):
             converted_amount = str(converted_amount.quantize(Decimal('1.00')))  #  округление до 2 цифр в дробной части
             base_currency = DAO_currency_repository.find_by_id(base_currency_id)
             target_currency = DAO_currency_repository.find_by_id(target_currency_id)
-            response = ExchangeResponse(base_currency, target_currency, rate, converted_amount)
+            amount = str(amount)
+            response = ExchangeResponse(base_currency, target_currency, rate, amount, converted_amount)
             return response
         else:
             return response
