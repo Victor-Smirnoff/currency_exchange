@@ -35,9 +35,6 @@ class ExchangeService(DaoExchangeRepository):
             return response
 
         # если пришли сюда и ничего не вернули, то возвращаем message Обменный курс не найден
-        response_code = 404
-        message = f"Ошибка {response_code} - Обменный курс {currency_from}-{currency_to} не найден"
-        response = ErrorResponse(response_code, message)
         return response
 
     def get_direct_course(self, currency_from, currency_to, amount):
@@ -87,8 +84,8 @@ class ExchangeService(DaoExchangeRepository):
         response = self.find_by_codes(reversed_currency_codes)
         if isinstance(response, ExchangeRate):
             DAO_currency_repository = DaoCurrencyRepository()
-            base_currency_id = response.TargetCurrencyId # base_currency_id будет в обратном курсе ссылаться на TargetCurrencyId
-            target_currency_id = response.BaseCurrencyId # target_currency_id будет в обратном курсе ссылаться на BaseCurrencyId
+            base_currency_id = response.TargetCurrencyId # base_currency_id в обратном курсе TargetCurrencyId
+            target_currency_id = response.BaseCurrencyId # target_currency_id в обратном курсе BaseCurrencyId
             rate = 1 / Decimal(response.Rate)
             rate = str(rate.quantize(Decimal('1.000000')))
             converted_amount = (1 / Decimal(rate)) * amount
@@ -99,4 +96,36 @@ class ExchangeService(DaoExchangeRepository):
             response = ExchangeResponse(base_currency, target_currency, rate, amount, converted_amount)
             return response
         else:
+            return response
+
+    def get_cross_course(self, currency_from, currency_to, amount):
+        """
+        Метод пытается найти кросс-курс через USD-валюту, если находит, то возвращает объект класса ExchangeResponse
+        или объект класса ErrorResponse - если нет обратного обменного курса
+        :param currency_from: из какой валюты перевод (базовая валюта)
+        :param currency_to: в какую валюту перевод (таргет валюта)
+        :param amount: количество базовой валюты
+        :return: объект класса ExchangeResponse или объект класса ErrorResponse
+        """
+        getcontext().prec = 7  # устанавливаем точность числа в 7 знаков
+        amount = Decimal(amount)
+        response_base_currency = self.find_by_codes_with_usd_base(currency_from)
+        response_target_currency = self.find_by_codes_with_usd_base(currency_to)
+        if isinstance(response_base_currency, ExchangeRate) and isinstance(response_target_currency, ExchangeRate):
+            DAO_currency_repository = DaoCurrencyRepository()
+            base_currency_id = response_base_currency.TargetCurrencyId
+            target_currency_id = response_target_currency.TargetCurrencyId
+            rate = Decimal(response_target_currency.Rate) / Decimal(response_base_currency.Rate)
+            converted_amount = rate * amount
+            converted_amount = str(converted_amount.quantize(Decimal('1.00')))  # округление до 2 цифр в дробной части
+            rate = str(rate.quantize(Decimal('1.000000')))
+            base_currency = DAO_currency_repository.find_by_id(base_currency_id)
+            target_currency = DAO_currency_repository.find_by_id(target_currency_id)
+            amount = str(amount)
+            response = ExchangeResponse(base_currency, target_currency, rate, amount, converted_amount)
+            return response
+        else:
+            response_code = 404
+            message = f"Ошибка {response_code} - Обменный курс {currency_from}-{currency_to} не найден"
+            response = ErrorResponse(response_code, message)
             return response
