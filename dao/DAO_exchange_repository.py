@@ -1,6 +1,6 @@
 from exchange_repository import ExchangeRepository
 from model.exchange_rate import ExchangeRate
-from model.error_response import ErrorResponse
+from model.dto_response.error_response import ErrorResponse
 import sqlite3
 from config.config import Config
 

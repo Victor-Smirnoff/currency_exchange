@@ -1,6 +1,6 @@
 from currency_repository import CurrencyRepository
 from model.currency import Currency
-from model.error_response import ErrorResponse
+from model.dto_response.error_response import ErrorResponse
 import sqlite3
 from config.config import Config
 
