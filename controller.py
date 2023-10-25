@@ -1,7 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 from http.server import HTTPServer
 import urllib.parse
-from config import Config
+from config.config import Config
 from get_performer_currencies import GetPerformerCurrencies
 from get_performer_exchange_rates import GetPerformerExchangeRates
 from patch_performer_exchange_rates import PatchPerformerExchangeRates
@@ -15,7 +15,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
     do_GET,
     do_POST,
     do_PATCH,
-    do_DELETE - not performed
+    do_DELETE
     """
 
     def do_GET(self):
