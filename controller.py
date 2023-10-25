@@ -1,3 +1,12 @@
+import sys
+sys.path.append('dao')
+sys.path.append('config')
+sys.path.append('dto_response')
+sys.path.append('view')
+sys.path.append('db')
+
+
+from dao.DAO_currency_repository import DaoCurrencyRepository
 from http.server import BaseHTTPRequestHandler
 from http.server import HTTPServer
 import urllib.parse
@@ -7,7 +16,7 @@ from config.config import Config
 # from patch_performer_exchange_rates import PatchPerformerExchangeRates
 # from post_performer_currencies import PostPerformerCurrencies
 # from post_performer_exchange_rates import PostPerformerExchangeRates
-from dao.DAO_currency_repository import DaoCurrencyRepository
+# from dao.DAO_currency_repository import DaoCurrencyRepository
 from dao.DAO_exchange_repository import DaoExchangeRepository
 from dto_response.error_response import ErrorResponse
 from view.view import ViewToJSON

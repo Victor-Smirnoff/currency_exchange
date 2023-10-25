@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass
@@ -10,7 +11,15 @@ class Config:
     """
 
     # ссылка на путь к файлу базы данных
-    db_file = "../db/database.db"
+    current_directory = Path.cwd()  # Получить текущую директорию (где выполняется скрипт)
+    db_file = current_directory.parent / "db" / "database.db"
+
+    # db_file = "../db/database.db"
+    # db_file = os.path.join("db", "database.db")
+    # db_file = "db\\database.db"
+    # db_file = "..\\db\\database.db"
+
+
 
     # Получение списка валют
     currencies: str = "/currencies"
