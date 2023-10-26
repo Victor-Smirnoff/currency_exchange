@@ -1,4 +1,4 @@
-from exchange_repository import ExchangeRepository
+from dao.exchange_repository import ExchangeRepository
 from model.exchange_rate import ExchangeRate
 from dto_response.error_response import ErrorResponse
 import sqlite3

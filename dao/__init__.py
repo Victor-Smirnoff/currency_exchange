@@ -1,2 +1,3 @@
 from dao.DAO_currency_repository import DaoCurrencyRepository
 from dao.DAO_exchange_repository import DaoExchangeRepository
+from dao.currency_repository import CurrencyRepository

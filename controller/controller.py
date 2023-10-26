@@ -1,4 +1,7 @@
 import sys
+
+from service.exchange_service import ExchangeService
+
 sys.path.append('../dao')
 sys.path.append('../config')
 sys.path.append('../dto_response')
@@ -33,8 +36,10 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             response_code, json_data = self.get_currency(self.path)
         elif self.path == Config.exchangeRates:                             # запрос в GET /exchangeRates
             response_code, json_data = self.get_exchange_rates()
-        elif self.path.startswith(Config.exchangeRate):                     # запрос в GET GET /exchangeRate/
+        elif self.path.startswith(Config.exchangeRate):                     # запрос в GET /exchangeRate/
             response_code, json_data = self.get_exchange_rate(self.path)
+        elif self.path.startswith(Config.exchange):                         # запрос в GET /exchange?
+            response_code, json_data = self.get_exchange(self.path)
 
 
 
@@ -130,6 +135,33 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             json_data = view.dumps_to_json(response)
         return (response_code, json_data)
 
+    def get_exchange(self, path):
+        """
+        Метод возвращает данные по запросу GET /exchange?from=BASE_CURRENCY_CODE&to=TARGET_CURRENCY_CODE&amount=$AMOUNT
+        :param path: путь запроса
+        :return: кортеж из двух элементов:
+        0 - индекс - response_code
+        1 - индекс - json_data
+        """
+        args_dict = {}
+        cutted_path = path.replace(Config.exchange, "")
+        splitted_cutted_path = cutted_path.split("&")
+        for arg in splitted_cutted_path:
+            key, value = arg.split("=")
+            args_dict[key] = value
+
+        view = ViewToJSON()  # объект класса ViewToJSON для представления
+        handler = ExchangeService()
+        response = handler.convert_currency(currency_from=args_dict["from"], currency_to=args_dict["to"], amount=args_dict["amount"])
+        if isinstance(response, ErrorResponse):
+            response_code = response.code
+            response = {"message": response.message}
+            json_data = view.dumps_to_json(response)
+        else:
+            response_code = 200
+            response = view.view_exchange(response)
+            json_data = view.dumps_to_json(response)
+        return (response_code, json_data)
 
     # def choose_get_handler(self):
     #     """

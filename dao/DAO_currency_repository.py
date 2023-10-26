@@ -1,4 +1,4 @@
-from currency_repository import CurrencyRepository
+from dao.currency_repository import CurrencyRepository
 from model.currency import Currency
 from dto_response.error_response import ErrorResponse
 import sqlite3

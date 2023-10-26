@@ -1,4 +1,4 @@
-from crud_repository import CrudRepository
+from dao.crud_repository import CrudRepository
 
 
 class CurrencyRepository(CrudRepository):
