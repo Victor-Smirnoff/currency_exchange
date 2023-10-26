@@ -87,7 +87,7 @@ class DaoCurrencyRepository(CurrencyRepository):
                     # иначе если результат SQL-запроса пуст, то response_code = 404. формируем объект класса ErrorResponse
                     else:
                         response_code = 404
-                        message = f"Ошибка - Валюта не найдена - {response_code}"
+                        message = f"Ошибка - Валюта <{code}> не найдена - {response_code}"
                         query_data = ErrorResponse(response_code, message)
 
             # иначе если БД недоступна, то response_code = 500. формируем объект класса ErrorResponse

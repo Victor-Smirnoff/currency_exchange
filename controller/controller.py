@@ -251,11 +251,14 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         """
         data_dict = self.get_form_fields()
 
-        if self.path.startswith(Config.exchangeRate):
+        if self.path.startswith(Config.exchangeRate):                                   # запрос PATCH /exchangeRate/
             rate = data_dict["rate"]
             splitted_path = self.path.split("/")
             currency_codes = splitted_path[-1]
             response_code, json_data = self.patch_exchange_rate(rate, currency_codes)
+        elif self.path.startswith(Config.currencies):                                    # запрос PATCH /currency/
+            name, code, sign = data_dict["name"], data_dict["code"], data_dict["sign"]
+            response_code, json_data = self.patch_currency(name, code, sign)
 
         self.send_response(response_code)
         self.send_header('Content-type', 'application/json')
@@ -284,6 +287,28 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             json_data = view.dumps_to_json(response)
         return (response_code, json_data)
 
+    def patch_currency(self, currency_name, currency_code, currency_sign):
+        """
+        Метод возвращает данные по запросу PATCH /currency/
+        :param currency_name: Полное имя валюты
+        :param currency_code: Код валюты
+        :param currency_sign: Символ валюты
+        :return: кортеж из двух элементов:
+        0 - индекс - response_code
+        1 - индекс - json_data
+        """
+        view = ViewToJSON()  # объект класса ViewToJSON для представления
+        handler = DaoCurrencyRepository()
+        response = handler.update(currency_name, currency_code, currency_sign)
+        if isinstance(response, ErrorResponse):
+            response_code = response.code
+            response = {"message": response.message}
+            json_data = view.dumps_to_json(response)
+        else:
+            response_code = 200
+            response = view.view_currency(response)
+            json_data = view.dumps_to_json(response)
+        return (response_code, json_data)
 
 
 
