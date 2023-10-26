@@ -149,7 +149,7 @@ class DaoCurrencyRepository(CurrencyRepository):
         :param currency_name: Полное имя валюты
         :param currency_code: Код валюты
         :param currency_sign: Символ валюты
-        :return: объект с данными из БД (данные которые были добавлены в БД)
+        :return: объект класса Currency с данными из БД (данные которые были добавлены в БД)
         """
         if not currency_name or not currency_code or not currency_sign:
             response_code = 400

@@ -161,8 +161,6 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             json_data = view.dumps_to_json(response)
         return (response_code, json_data)
 
-
-
     def do_POST(self):
         """
         Метод обрабатывает запросы POST
@@ -170,9 +168,10 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         """
         data_dict = self.get_form_fields()
 
-        if self.path == Config.currencies:                          # запрос POST /currencies
-            response_code, json_data = self.post_currencies()
-        elif self.path == Config.exchangeRates:                     # запрос POST /exchangeRates
+        if self.path == Config.currencies:                                          # запрос POST /currencies
+            name, code, sign = data_dict["name"], data_dict["code"], data_dict["sign"]
+            response_code, json_data = self.post_currencies(name, code, sign)
+        elif self.path == Config.exchangeRates:                                     # запрос POST /exchangeRates
             response_code, json_data = self.post_exchange_rates()
 
         self.send_response(response_code)
@@ -183,6 +182,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
     def get_form_fields(self):
         """
         Метод возвращает словарь с данными полей формы (x-www-form-urlencoded)
+        Метод работает для POST и PATCH запросов
         :return: dict с данными, которые были переданы по x-www-form-urlencoded
         """
         content_length = int(self.headers['Content-Length'])
@@ -193,8 +193,30 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             key, value = piece.split("=")
             value = urllib.parse.unquote(value) # Декодируем значение из URL-кодирования, если необходимо
             data_dict[key] = value
-
         return data_dict
+
+    def post_currencies(self, currency_name, currency_code, currency_sign):
+        """
+        Метод возвращает данные по запросу POST /currencies
+        :param currency_name:
+        :param currency_code:
+        :param currency_sign:
+        :return: кортеж из двух элементов:
+        0 - индекс - response_code
+        1 - индекс - json_data
+        """
+        view = ViewToJSON()  # объект класса ViewToJSON для представления
+        handler = DaoCurrencyRepository()
+        response = handler.save(currency_name, currency_code, currency_sign)
+        if isinstance(response, ErrorResponse):
+            response_code = response.code
+            response = {"message": response.message}
+            json_data = view.dumps_to_json(response)
+        else:
+            response_code = 200
+            response = view.view_currency(response)
+            json_data = view.dumps_to_json(response)
+        return (response_code, json_data)
 
     # def choose_post_handler(self):
     #     """
