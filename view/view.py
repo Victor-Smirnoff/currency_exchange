@@ -70,3 +70,17 @@ class ViewToJSON:
         :param response: это объект класса ExchangeRate
         :return: преобразованный словарь с данными по конкретному обменному курсу, который потом можно превратить в JSON
         """
+        obj_dao_currency = DaoCurrencyRepository()  # объект класса DaoCurrencyRepository для поиска валюты по ID
+        exchange_rate_id = response.ID
+        BaseCurrencyId = response.BaseCurrencyId
+        TargetCurrencyId = response.TargetCurrencyId
+        Rate = response.Rate
+        baseCurrency = obj_dao_currency.find_by_id(BaseCurrencyId)
+        baseCurrency = self.view_currency(baseCurrency)
+        targetCurrency = obj_dao_currency.find_by_id(TargetCurrencyId)
+        targetCurrency = self.view_currency(targetCurrency)
+        response_to_json = {"id": exchange_rate_id,
+                              "baseCurrency": baseCurrency,
+                              "targetCurrency": targetCurrency,
+                              "rate": Rate}
+        return response_to_json

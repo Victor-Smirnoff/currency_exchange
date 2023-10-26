@@ -27,13 +27,13 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         Метод обрабатывает запросы GET
         :return: ответ на запрос
         """
-        if self.path == Config.currencies:
+        if self.path == Config.currencies:                                  # запрос в GET /currencies
             response_code, json_data = self.get_currencies()
-        elif self.path.startswith(Config.currency):
+        elif self.path.startswith(Config.currency):                         # запрос в GET /currency/
             response_code, json_data = self.get_currency(self.path)
-        elif self.path == Config.exchangeRates:
+        elif self.path == Config.exchangeRates:                             # запрос в GET /exchangeRates
             response_code, json_data = self.get_exchange_rates()
-        elif self.path.startswith(Config.exchangeRate):
+        elif self.path.startswith(Config.exchangeRate):                     # запрос в GET GET /exchangeRate/
             response_code, json_data = self.get_exchange_rate(self.path)
 
 
