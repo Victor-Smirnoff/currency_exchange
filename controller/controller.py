@@ -172,7 +172,9 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             name, code, sign = data_dict["name"], data_dict["code"], data_dict["sign"]
             response_code, json_data = self.post_currencies(name, code, sign)
         elif self.path == Config.exchangeRates:                                         # запрос POST /exchangeRates
-            baseCurrencyCode, targetCurrencyCode, rate = data_dict["baseCurrencyCode"], data_dict["targetCurrencyCode"], data_dict["rate"]
+            baseCurrencyCode = data_dict["baseCurrencyCode"]
+            targetCurrencyCode = data_dict["targetCurrencyCode"]
+            rate = data_dict["rate"]
             response_code, json_data = self.post_exchange_rates(baseCurrencyCode, targetCurrencyCode, rate)
 
         self.send_response(response_code)
@@ -242,40 +244,45 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             json_data = view.dumps_to_json(response)
         return (response_code, json_data)
 
-    # def choose_post_handler(self):
-    #     """
-    #     Метод выбирает обработчик в зависимости от пути запроса
-    #     :return: объект класса обработчика
-    #     """
-    #     if self.path == Config.currencies:
-    #         handler = PostPerformerCurrencies(self.path)
-    #     if self.path == Config.exchangeRates:
-    #         handler = PostPerformerExchangeRates(self.path)
-    #
-    #     return handler
-    #
-    # def do_PATCH(self):
-    #     """
-    #     Метод обрабатывает запросы PATCH
-    #     :return: ответ на запрос
-    #     """
-    #     data_dict = self.get_form_fields()
-    #     handler = self.choose_patch_handler()
-    #     response_code, query_data = handler.perform_handling(data_dict)
-    #     self.send_response(response_code)
-    #     self.send_header('Content-type', 'application/json')
-    #     self.end_headers()
-    #     self.wfile.write(query_data.encode())
-    #
-    # def choose_patch_handler(self):
-    #     """
-    #     Метод выбирает обработчик PATCH запроса
-    #     :return: функция обработчик
-    #     """
-    #     if self.path.startswith(Config.exchangeRate):
-    #         handler = PatchPerformerExchangeRates(self.path)
-    #
-    #     return handler
+    def do_PATCH(self):
+        """
+        Метод обрабатывает запросы PATCH
+        :return: ответ на запрос
+        """
+        data_dict = self.get_form_fields()
+
+        if self.path.startswith(Config.exchangeRate):
+            rate = data_dict["rate"]
+            splitted_path = self.path.split("/")
+            currency_codes = splitted_path[-1]
+            response_code, json_data = self.patch_exchange_rate(rate, currency_codes)
+
+        self.send_response(response_code)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json_data.encode())
+
+    def patch_exchange_rate(self, rate, currency_codes):
+        """
+        Метод возвращает данные по запросу PATCH /exchangeRate/
+        :param rate: обменный курс
+        :param currency_codes: коды валют - Валютная пара задаётся идущими подряд кодами валют
+        :return: кортеж из двух элементов:
+        0 - индекс - response_code
+        1 - индекс - json_data
+        """
+        view = ViewToJSON()  # объект класса ViewToJSON для представления
+        handler = DaoExchangeRepository()
+        response = handler.update(rate, currency_codes)
+        if isinstance(response, ErrorResponse):
+            response_code = response.code
+            response = {"message": response.message}
+            json_data = view.dumps_to_json(response)
+        else:
+            response_code = 200
+            response = view.view_exchange_rate(response)
+            json_data = view.dumps_to_json(response)
+        return (response_code, json_data)
 
 
 
