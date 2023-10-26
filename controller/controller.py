@@ -41,9 +41,6 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         elif self.path.startswith(Config.exchange):                         # запрос в GET /exchange?
             response_code, json_data = self.get_exchange(self.path)
 
-
-
-
         self.send_response(response_code)
         self.send_header('Content-type', 'application/json')
         self.end_headers()
@@ -163,18 +160,8 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             json_data = view.dumps_to_json(response)
         return (response_code, json_data)
 
-    # def choose_get_handler(self):
-    #     """
-    #     Метод выбирает объект обработчик, который будет отвечать на запрос
-    #     :return: объект класса обработчика
-    #     """
-    #     if self.path == Config.currencies or self.path.startswith(Config.currency):
-    #         handler = GetPerformerCurrencies(self.path)
-    #     if self.path == Config.exchangeRates or self.path.startswith(Config.exchangeRate) or self.path.startswith(Config.exchange):
-    #         handler = GetPerformerExchangeRates(self.path)
-    #
-    #     return handler
-    #
+
+
     # def do_POST(self):
     #     """
     #     Метод обрабатывает запросы POST
