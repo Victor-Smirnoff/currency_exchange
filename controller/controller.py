@@ -320,7 +320,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             currency_codes = splitted_path[-1]
             baseCurrencyCode, targetCurrencyCode = currency_codes[:3], currency_codes[3:]
             response_code, json_data = self.delete_exchange_rate(baseCurrencyCode, targetCurrencyCode)
-        elif self.path.startswith(Config.currencies):                   # запрос DELETE /currency/
+        elif self.path.startswith(Config.currency):                     # запрос DELETE /currency/
             splitted_path = self.path.split("/")
             currency_code = splitted_path[-1]
             response_code, json_data = self.delete_currency(currency_code)
@@ -349,6 +349,27 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         else:
             response_code = 200
             response = view.view_exchange_rate(response)
+            json_data = view.dumps_to_json(response)
+        return (response_code, json_data)
+
+    def delete_currency(self, currency_code):
+        """
+        Метод возвращает данные по запросу DELETE /currency/
+        :param currency_code: Код валюты
+        :return: кортеж из двух элементов:
+        0 - индекс - response_code
+        1 - индекс - json_data
+        """
+        view = ViewToJSON()  # объект класса ViewToJSON для представления
+        handler = DaoCurrencyRepository()
+        response = handler.delete(currency_code)
+        if isinstance(response, ErrorResponse):
+            response_code = response.code
+            response = {"message": response.message}
+            json_data = view.dumps_to_json(response)
+        else:
+            response_code = 200
+            response = view.view_currency(response)
             json_data = view.dumps_to_json(response)
         return (response_code, json_data)
 
