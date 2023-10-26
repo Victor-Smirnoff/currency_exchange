@@ -1,6 +1,6 @@
 import json
 
-from dao.DAO_currency_repository import DaoCurrencyRepository
+from dao import DaoCurrencyRepository
 from model.currency import Currency
 
 

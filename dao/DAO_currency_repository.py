@@ -1,6 +1,3 @@
-import sys
-sys.path.append('config')
-
 from currency_repository import CurrencyRepository
 from model.currency import Currency
 from dto_response.error_response import ErrorResponse
@@ -264,46 +261,3 @@ class DaoCurrencyRepository(CurrencyRepository):
                     query_data = ErrorResponse(response_code, message)
 
         return query_data
-
-
-
-
-
-
-# print(db_path)
-#
-# absolute_db_path = db_path.resolve() # Преобразовать путь к файлу в абсолютный путь
-#
-# print(absolute_db_path)
-#
-#
-# with sqlite3.connect(db_path) as db:
-#     cursor = db.cursor()
-#
-#
-#
-#
-#
-#
-#     # открываем файл с SQL-запросом на чтение таблицы Currencies
-#     with open("../db/GET_currency.txt", "r") as file:
-#         query = file.read()
-#
-#     query_data = cursor.execute(query, ("EUR",)).fetchone()
-#
-#     # если результат SQL-запроса не пуст, то формируем объект класса Currency
-#     if query_data:
-#         dao = DaoCurrencyRepository()
-#         # список названий колонок из выполненного SQL-запроса.
-#         column_names = [description[0] for description in cursor.description]
-#         result = dao.get_correct_dict_currency(query_data, column_names)
-#         ID, FullName, Code, Sign = result["id"], result["name"], result["code"], result["sign"]
-#         query_data = Currency(ID, FullName, Code, Sign)
-#
-#     # иначе если результат SQL-запроса пуст, то response_code = 404. формируем объект класса ErrorResponse
-#     else:
-#         response_code = 404
-#         message = f"Ошибка - Валюта не найдена - {response_code}"
-#         query_data = ErrorResponse(response_code, message)
-#
-# print(query_data)

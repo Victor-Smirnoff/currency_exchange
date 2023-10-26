@@ -14,13 +14,6 @@ class Config:
     current_directory = Path.cwd()  # Получить текущую директорию (где выполняется скрипт)
     db_file = current_directory.parent / "db" / "database.db"
 
-    # db_file = "../db/database.db"
-    # db_file = os.path.join("db", "database.db")
-    # db_file = "db\\database.db"
-    # db_file = "..\\db\\database.db"
-
-
-
     # Получение списка валют
     currencies: str = "/currencies"
 
