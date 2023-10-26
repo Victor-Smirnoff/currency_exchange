@@ -168,11 +168,12 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         """
         data_dict = self.get_form_fields()
 
-        if self.path == Config.currencies:                                          # запрос POST /currencies
+        if self.path == Config.currencies:                                              # запрос POST /currencies
             name, code, sign = data_dict["name"], data_dict["code"], data_dict["sign"]
             response_code, json_data = self.post_currencies(name, code, sign)
-        elif self.path == Config.exchangeRates:                                     # запрос POST /exchangeRates
-            response_code, json_data = self.post_exchange_rates()
+        elif self.path == Config.exchangeRates:                                         # запрос POST /exchangeRates
+            baseCurrencyCode, targetCurrencyCode, rate = data_dict["baseCurrencyCode"], data_dict["targetCurrencyCode"], data_dict["rate"]
+            response_code, json_data = self.post_exchange_rates(baseCurrencyCode, targetCurrencyCode, rate)
 
         self.send_response(response_code)
         self.send_header('Content-type', 'application/json')
@@ -198,9 +199,9 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
     def post_currencies(self, currency_name, currency_code, currency_sign):
         """
         Метод возвращает данные по запросу POST /currencies
-        :param currency_name:
-        :param currency_code:
-        :param currency_sign:
+        :param currency_name: Полное имя валюты
+        :param currency_code: Код валюты
+        :param currency_sign: Символ валюты
         :return: кортеж из двух элементов:
         0 - индекс - response_code
         1 - индекс - json_data
@@ -215,6 +216,29 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         else:
             response_code = 200
             response = view.view_currency(response)
+            json_data = view.dumps_to_json(response)
+        return (response_code, json_data)
+
+    def post_exchange_rates(self, baseCurrencyCode, targetCurrencyCode, rate):
+        """
+        Метод возвращает данные по запросу POST /exchangeRates
+        :param baseCurrencyCode: базовая валюта
+        :param targetCurrencyCode: целевая валюта
+        :param rate: обменный курс
+        :return: кортеж из двух элементов:
+        0 - индекс - response_code
+        1 - индекс - json_data
+        """
+        view = ViewToJSON()  # объект класса ViewToJSON для представления
+        handler = DaoExchangeRepository()
+        response = handler.save(baseCurrencyCode, targetCurrencyCode, rate)
+        if isinstance(response, ErrorResponse):
+            response_code = response.code
+            response = {"message": response.message}
+            json_data = view.dumps_to_json(response)
+        else:
+            response_code = 200
+            response = view.view_exchange_rate(response)
             json_data = view.dumps_to_json(response)
         return (response_code, json_data)
 
