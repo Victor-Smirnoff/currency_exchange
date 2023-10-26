@@ -84,3 +84,22 @@ class ViewToJSON:
                               "targetCurrency": targetCurrency,
                               "rate": Rate}
         return response_to_json
+
+    def view_exchange(self, response):
+        """
+        Метод для обработки данных по расчёту перевода определённого количества средств из одной валюты в другую
+        :param response: это объект класса ExchangeResponse
+        :return: преобразованный словарь с данными по обмену валют, который потом можно превратить в JSON
+        """
+        base_currency = response.baseCurrency
+        target_currency = response.targetCurrency
+        rate = response.rate
+        amount = response.amount
+        converted_amount = response.convertedAmount
+        response_to_json = {"baseCurrency": self.view_currency(base_currency),
+                            "targetCurrency": self.view_currency(target_currency),
+                            "rate": rate,
+                            "amount": amount,
+                            "convertedAmount": converted_amount
+                            }
+        return response_to_json

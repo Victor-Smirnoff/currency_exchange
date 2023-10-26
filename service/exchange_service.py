@@ -88,7 +88,7 @@ class ExchangeService(DaoExchangeRepository):
             target_currency_id = response.BaseCurrencyId # target_currency_id в обратном курсе BaseCurrencyId
             rate = 1 / Decimal(response.Rate)
             rate = str(rate.quantize(Decimal('1.000000')))
-            converted_amount = (1 / Decimal(rate)) * amount
+            converted_amount = (Decimal(rate)) * amount
             converted_amount = str(converted_amount.quantize(Decimal('1.00')))  #  округление до 2 цифр в дробной части
             base_currency = DAO_currency_repository.find_by_id(base_currency_id)
             target_currency = DAO_currency_repository.find_by_id(target_currency_id)

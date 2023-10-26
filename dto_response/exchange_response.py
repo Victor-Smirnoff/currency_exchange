@@ -9,8 +9,8 @@ class ExchangeResponse:
     """
     def __init__(self, baseCurrency, targetCurrency, rate, amount, convertedAmount):
         """
-        :param baseCurrency: объект с данными базовой валюты
-        :param targetCurrency: объект с данными целевой валюты
+        :param baseCurrency: объект с данными базовой валюты (объект класса Currency)
+        :param targetCurrency: объект с данными целевой валюты (объект класса Currency)
         :param rate: обменный курс
         :param amount: количество базовой валюты
         :param convertedAmount: полученное количество целевой валюты
