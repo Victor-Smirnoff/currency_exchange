@@ -310,6 +310,47 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             json_data = view.dumps_to_json(response)
         return (response_code, json_data)
 
+    def do_DELETE(self):
+        """
+        Метод обрабатывает запросы DELETE
+        :return: ответ на запрос
+        """
+        if self.path.startswith(Config.exchangeRate):                   # запрос DELETE /exchangeRate/
+            splitted_path = self.path.split("/")
+            currency_codes = splitted_path[-1]
+            baseCurrencyCode, targetCurrencyCode = currency_codes[:3], currency_codes[3:]
+            response_code, json_data = self.delete_exchange_rate(baseCurrencyCode, targetCurrencyCode)
+        elif self.path.startswith(Config.currencies):                   # запрос DELETE /currency/
+            splitted_path = self.path.split("/")
+            currency_code = splitted_path[-1]
+            response_code, json_data = self.delete_currency(currency_code)
+
+        self.send_response(response_code)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json_data.encode())
+
+    def delete_exchange_rate(self, baseCurrencyCode, targetCurrencyCode):
+        """
+        Метод возвращает данные по запросу DELETE /exchangeRate/
+        :param baseCurrencyCode: код базовой валюты
+        :param targetCurrencyCode: код целевой валюты
+        :return: кортеж из двух элементов:
+        0 - индекс - response_code
+        1 - индекс - json_data
+        """
+        view = ViewToJSON()  # объект класса ViewToJSON для представления
+        handler = DaoExchangeRepository()
+        response = handler.delete(baseCurrencyCode, targetCurrencyCode)
+        if isinstance(response, ErrorResponse):
+            response_code = response.code
+            response = {"message": response.message}
+            json_data = view.dumps_to_json(response)
+        else:
+            response_code = 200
+            response = view.view_exchange_rate(response)
+            json_data = view.dumps_to_json(response)
+        return (response_code, json_data)
 
 
 def run(server_class=HTTPServer, handler_class=BaseHTTPRequestHandler):

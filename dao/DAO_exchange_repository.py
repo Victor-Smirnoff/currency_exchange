@@ -269,6 +269,8 @@ class DaoExchangeRepository(ExchangeRepository):
         """
         Метод для удаления обменного курса из таблицы ExchangeRates
         Это метод Delete	DELETE
+        :param baseCurrencyCode: код базовой валюты
+        :param targetCurrencyCode: код целевой валюты
         :return: объект класса ExchangeRate если обменный курс был удалён
         или объект класса ErrorResponse если произошла ошибка при удалении данных
         """
