@@ -199,7 +199,7 @@ class DaoExchangeRepository(ExchangeRepository):
 
                     except sqlite3.IntegrityError as e:
                         response_code = 409
-                        message = f"Ошибка - {e}. Валютная пара с таким кодом уже существует - 409"
+                        message = f"Ошибка - {e}. Валютная пара с таким кодом <{baseCurrencyCode}>-<{targetCurrencyCode}> уже существует - 409"
                         query_data = ErrorResponse(response_code, message)
 
             except sqlite3.IntegrityError:
