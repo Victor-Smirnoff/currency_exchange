@@ -63,3 +63,10 @@ class ViewToJSON:
             response_to_json.append(exchange_rate_dict)
 
         return response_to_json
+
+    def view_exchange_rate(self, response):
+        """
+        Метод для обработки данных по одному конкретному обменному курсу
+        :param response: это объект класса ExchangeRate
+        :return: преобразованный словарь с данными по конкретному обменному курсу, который потом можно превратить в JSON
+        """

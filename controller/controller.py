@@ -33,6 +33,10 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             response_code, json_data = self.get_currency(self.path)
         elif self.path == Config.exchangeRates:
             response_code, json_data = self.get_exchange_rates()
+        elif self.path.startswith(Config.exchangeRate):
+            response_code, json_data = self.get_exchange_rate(self.path)
+
+
 
 
         self.send_response(response_code)
@@ -100,6 +104,29 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         else:
             response_code = 200
             response = view.view_all_exchange_rates(response)
+            json_data = view.dumps_to_json(response)
+        return (response_code, json_data)
+
+    def get_exchange_rate(self, path):
+        """
+        Метод возвращает данные по запросу GET /exchangeRate/
+        :param path: путь запроса
+        :return: кортеж из двух элементов:
+        0 - индекс - response_code
+        1 - индекс - json_data
+        """
+        splitted_path = path.split("/")
+        currency_codes = splitted_path[-1]
+        view = ViewToJSON()  # объект класса ViewToJSON для представления
+        handler = DaoExchangeRepository()
+        response = handler.find_by_codes(currency_codes)
+        if isinstance(response, ErrorResponse):
+            response_code = response.code
+            response = {"message": response.message}
+            json_data = view.dumps_to_json(response)
+        else:
+            response_code = 200
+            response = view.view_exchange_rate(response)
             json_data = view.dumps_to_json(response)
         return (response_code, json_data)
 
