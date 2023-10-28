@@ -1,7 +1,7 @@
 import sys
 import urllib
 
-from service.exchange_service import ExchangeService
+from service import ExchangeService
 
 sys.path.append('../dao')
 sys.path.append('../config')
