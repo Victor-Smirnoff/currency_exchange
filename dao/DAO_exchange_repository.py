@@ -2,7 +2,7 @@ from dao.exchange_repository import ExchangeRepository
 from model.exchange_rate import ExchangeRate
 from dto_response.error_response import ErrorResponse
 import sqlite3
-from config.config import Config
+from config import Config
 
 
 class DaoExchangeRepository(ExchangeRepository):
@@ -29,10 +29,18 @@ class DaoExchangeRepository(ExchangeRepository):
             try:
                 with sqlite3.connect(Config.db_file) as db:
                     cursor = db.cursor()
-
-                    # открываем файл с SQL-запросом на чтение таблицы ExchangeRates (получение таблицы всех валют)
-                    with open("../db/GET_exchange_rate.txt", "r") as file:
-                        query = file.read()
+                    # SQL-запрос на чтение таблицы ExchangeRates (получение таблицы конкретного курса)
+                    query = """SELECT * FROM exchangeRates
+                                    WHERE 
+                                    BaseCurrencyId = (
+                                    SELECT ID as baseCurrency_ID FROM Currencies
+                                    WHERE Code == ?
+                                    )
+                                    AND
+                                    TargetCurrencyId = (
+                                    SELECT ID as targetCurrency_ID FROM Currencies
+                                    WHERE Code == ?
+                                    )"""
 
                     result_data = cursor.execute(query, (baseCurrency, targetCurrency,)).fetchone()
 
@@ -72,10 +80,18 @@ class DaoExchangeRepository(ExchangeRepository):
             try:
                 with sqlite3.connect(Config.db_file) as db:
                     cursor = db.cursor()
-
-                    # открываем файл с SQL-запросом на чтение таблицы ExchangeRates (получение таблицы всех валют)
-                    with open("../db/GET_exchange_rate.txt", "r") as file:
-                        query = file.read()
+                    # SQL-запрос на чтение таблицы ExchangeRates (получение таблицы конкретного курса)
+                    query = """SELECT * FROM exchangeRates
+                                    WHERE 
+                                    BaseCurrencyId = (
+                                    SELECT ID as baseCurrency_ID FROM Currencies
+                                    WHERE Code == ?
+                                    )
+                                    AND
+                                    TargetCurrencyId = (
+                                    SELECT ID as targetCurrency_ID FROM Currencies
+                                    WHERE Code == ?
+                                    )"""
 
                     result_data = cursor.execute(query, (baseCurrency, targetCurrency,)).fetchone()
 
@@ -105,10 +121,8 @@ class DaoExchangeRepository(ExchangeRepository):
         try:
             with sqlite3.connect(Config.db_file) as db:
                 cursor = db.cursor()
-
-                # открываем файл с SQL-запросом на чтение таблицы Currencies (получение таблицы всех валют)
-                with open("../db/GET_exchange_rates.txt", "r") as file:
-                    query = file.read()
+                # SQL-запрос на чтение таблицы Currencies (получение таблицы всех обменных курсов)
+                query = """SELECT * FROM exchangeRates"""
 
                 query_data = []
                 result_data = cursor.execute(query).fetchall()
@@ -134,10 +148,8 @@ class DaoExchangeRepository(ExchangeRepository):
         try:
             with sqlite3.connect(Config.db_file) as db:
                 cursor = db.cursor()
-
-                # открываем файл с SQL-запросом на чтение таблицы ExchangeRates (получение таблицы всех валют)
-                with open("../db/GET_exchange_rate_from_ID.txt", "r") as file:
-                    query = file.read()
+                # SQL-запрос на чтение таблицы ExchangeRates (получение обменного курса по ID)
+                query = """SELECT * FROM exchangeRates WHERE ID == ?"""
 
                 data = cursor.execute(query, (id,)).fetchone()
 
@@ -181,17 +193,14 @@ class DaoExchangeRepository(ExchangeRepository):
                     cursor = db.cursor()
 
                     # теперь необходимо по коду валюты получить её ID
-                    # открываем файл с SQL-запросом на чтение таблицы Currencies (взять ID валюты по её коду)
-                    with open("../db/GET_ID_of_currency_from_code.txt", "r") as file:
-                        query = file.read()
+                    # SQL-запрос на чтение таблицы Currencies (взять ID валюты по её коду)
+                    query = """SELECT ID FROM Currencies WHERE Code == ?"""
 
                     BaseCurrencyId = cursor.execute(query, (baseCurrencyCode,)).fetchone()[0]
                     TargetCurrencyId = cursor.execute(query, (targetCurrencyCode,)).fetchone()[0]
 
-                    # открываем файл с SQL-запросом на чтение таблицы ExchangeRates (добавление нового обменного курса)
-                    with open("../db/POST_exchange_rate.txt", "r") as file:
-                        query = file.read()
-
+                    # SQL-запрос на чтение таблицы ExchangeRates (добавление нового обменного курса)
+                    query = """INSERT INTO ExchangeRates (BaseCurrencyId, TargetCurrencyId, rate) VALUES(?, ?, ?)"""
                     try:
                         cursor.execute(query, (BaseCurrencyId, TargetCurrencyId, rate))
                         db.commit()
@@ -234,16 +243,14 @@ class DaoExchangeRepository(ExchangeRepository):
                     cursor = db.cursor()
 
                     # теперь необходимо по коду валюты получить её ID
-                    # открываем файл с SQL-запросом на чтение таблицы Currencies (взять ID валюты по её коду)
-                    with open("../db/GET_ID_of_currency_from_code.txt", "r") as file:
-                        query = file.read()
+                    # SQL-запрос на чтение таблицы Currencies (взять ID валюты по её коду)
+                    query = """SELECT ID FROM Currencies WHERE Code == ?"""
 
                     BaseCurrencyId = cursor.execute(query, (baseCurrencyCode,)).fetchone()[0]
                     TargetCurrencyId = cursor.execute(query, (targetCurrencyCode,)).fetchone()[0]
 
-                    # открываем файл с SQL-запросом на чтение для изменения существующего обменного курса таблицы ExchangeRates
-                    with open("../db/PATCH_exchange_rate.txt", "r") as file:
-                        query = file.read()
+                    # SQL-запрос на чтение для изменения существующего обменного курса таблицы ExchangeRates
+                    query = """UPDATE ExchangeRates SET rate = ? WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?"""
 
                     # пробуем поменять обменный курс
                     cursor.execute(query, (rate, BaseCurrencyId, TargetCurrencyId))
@@ -290,16 +297,14 @@ class DaoExchangeRepository(ExchangeRepository):
                         cursor = db.cursor()
 
                         # теперь необходимо по коду валюты получить её ID
-                        # открываем файл с SQL-запросом на чтение таблицы Currencies (взять ID валюты по её коду)
-                        with open("../db/GET_ID_of_currency_from_code.txt", "r") as file:
-                            query = file.read()
+                        # SQL-запрос на чтение таблицы Currencies (взять ID валюты по её коду)
+                        query = """SELECT ID FROM Currencies WHERE Code == ?"""
 
                         BaseCurrencyId = cursor.execute(query, (baseCurrencyCode,)).fetchone()[0]
                         TargetCurrencyId = cursor.execute(query, (targetCurrencyCode,)).fetchone()[0]
 
-                        # открываем файл с SQL-запросом на чтение таблицы ExchangeRates (удаление обменного курса)
-                        with open("../db/DELETE_from_ExchangeRates.txt", "r") as file:
-                            query = file.read()
+                        # SQL-запрос на чтение таблицы ExchangeRates (удаление обменного курса)
+                        query = """DELETE FROM ExchangeRates WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?"""
 
                         cursor.execute(query, (BaseCurrencyId, TargetCurrencyId))
                         db.commit()

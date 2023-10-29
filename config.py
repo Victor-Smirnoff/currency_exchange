@@ -11,8 +11,8 @@ class Config:
     """
 
     # ссылка на путь к файлу базы данных
-    # current_directory = Path.cwd()  # Получить текущую директорию (где выполняется скрипт)
-    # db_file = current_directory.parent / "db" / "database.db"
+    current_directory = Path.cwd()  # Получить текущую директорию (где выполняется скрипт)
+    db_file = current_directory / "db" / "database.db"
 
     # Получение списка валют
     currencies: str = "/currencies"

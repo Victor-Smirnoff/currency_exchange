@@ -1,23 +1,10 @@
-import sys
 import urllib
-
-from pathlib import Path
-current_directory = Path.cwd()  # Получить текущую директорию (где выполняется скрипт)
-db_file = db_file = current_directory / "db" / "database.db"
-
-# sys.path.append('../service')
-# sys.path.append('../dao')
-# sys.path.append('../config')
-# sys.path.append('../dto_response')
-# sys.path.append('../view')
-# sys.path.append('../db')
-
 from service.exchange_service import ExchangeService
 from dto_response import ErrorResponse
 from dao import DaoCurrencyRepository, DaoExchangeRepository
 from http.server import BaseHTTPRequestHandler
 from http.server import HTTPServer
-from config.config import Config
+from config import Config
 from view.view import ViewToJSON
 
 

@@ -2,8 +2,7 @@ from dao.currency_repository import CurrencyRepository
 from model.currency import Currency
 from dto_response.error_response import ErrorResponse
 import sqlite3
-from config.config import Config
-from controller import db_file
+from config import Config
 
 
 class DaoCurrencyRepository(CurrencyRepository):
@@ -21,13 +20,10 @@ class DaoCurrencyRepository(CurrencyRepository):
         Либо это объект класса ErrorResponse (код ошибки и сообщение об ошибке)
         """
         try:
-            with sqlite3.connect(db_file) as db:
+            with sqlite3.connect(Config.db_file) as db:
                 cursor = db.cursor()
-
-                # открываем файл с SQL-запросом на чтение таблицы Currencies
-                with open("../db/GET_currency_from_ID.txt", "r") as file:
-                    query = file.read()
-
+                # SQL-запрос на чтение таблицы Currencies
+                query = """SELECT * FROM Currencies WHERE ID == ?"""
                 query_data = cursor.execute(query, (currency_id,)).fetchone()
 
                 # если результат SQL-запроса не пуст, то формируем объект класса Currency
@@ -68,13 +64,10 @@ class DaoCurrencyRepository(CurrencyRepository):
             query_data = ErrorResponse(response_code, message)
         else:
             try:
-                with sqlite3.connect(db_file) as db:
+                with sqlite3.connect(Config.db_file) as db:
                     cursor = db.cursor()
-
-                    # открываем файл с SQL-запросом на чтение таблицы Currencies
-                    with open("../db/GET_currency.txt", "r") as file:
-                        query = file.read()
-
+                    # SQL-запрос на чтение таблицы Currencies
+                    query = """SELECT * FROM Currencies WHERE Code == ?"""
                     query_data = cursor.execute(query, (code,)).fetchone()
 
                     # если результат SQL-запроса не пуст, то формируем объект класса Currency
@@ -120,13 +113,10 @@ class DaoCurrencyRepository(CurrencyRepository):
         :return: list
         """
         try:
-            with sqlite3.connect(db_file) as db:
+            with sqlite3.connect(Config.db_file) as db:
                 cursor = db.cursor()
-
-                # открываем файл с SQL-запросом на чтение таблицы Currencies (получение таблицы всех валют)
-                with open("../db/GET_currencies.txt", "r") as file:
-                    query = file.read()
-
+                # SQL-запрос на чтение таблицы Currencies
+                query = """SELECT * FROM Currencies"""
                 query_data_tmp = cursor.execute(query).fetchall()
                 query_data = []
                 # список названий колонок из выполненного SQL-запроса
@@ -158,13 +148,10 @@ class DaoCurrencyRepository(CurrencyRepository):
             query_data = ErrorResponse(response_code, message)
         else:
             try:
-                with sqlite3.connect(db_file) as db:
+                with sqlite3.connect(Config.db_file) as db:
                     cursor = db.cursor()
-
-                    # открываем файл с SQL-запросом на добавление новой валюты в таблицу Currencies
-                    with open("../db/POST_currency.txt", "r") as file:
-                        query = file.read()
-
+                    # SQL-запрос на добавление новой валюты в таблицу Currencies
+                    query = """INSERT INTO Currencies (Code, FullName, Sign) VALUES(?, ?, ?)"""
                     try:
                         cursor.execute(query, (currency_code, currency_name, currency_sign))
                         db.commit()
@@ -198,13 +185,10 @@ class DaoCurrencyRepository(CurrencyRepository):
             query_data = ErrorResponse(response_code, message)
         else:
             try:
-                with sqlite3.connect(db_file) as db:
+                with sqlite3.connect(Config.db_file) as db:
                     cursor = db.cursor()
-
-                    # открываем файл с SQL-запросом на изменение данных валюты в таблицу Currencies
-                    with open("../db/PATCH_currency.txt", "r") as file:
-                        query = file.read()
-
+                    # SQL-запрос на обновление валюты в таблицу Currencies
+                    query = """UPDATE Currencies SET (Code, FullName, Sign) = (?, ?, ?) WHERE id = ?"""
                     currency = self.find_by_code(currency_code)
                     if isinstance(currency, Currency):
                         currency_id = currency.ID
@@ -235,26 +219,35 @@ class DaoCurrencyRepository(CurrencyRepository):
             query_data = self.find_by_code(code)
             if isinstance(query_data, Currency):
                 try:
-                    with sqlite3.connect(db_file) as db:
+                    with sqlite3.connect(Config.db_file) as db:
                         cursor = db.cursor()
+                        # SQL-запрос на удаление данных валюты BaseCurrency из таблицы ExchangeRates
+                        query = """DELETE FROM ExchangeRates
+                                        WHERE BaseCurrencyId IN (
+                                        SELECT Currencies.ID
+                                        FROM Currencies
+                                        INNER JOIN ExchangeRates ON Currencies.ID = ExchangeRates.BaseCurrencyId
+                                        WHERE Currencies.Code = ?
+                                        );"""
 
-                        # открываем файл с SQL-запросом на удаление данных валюты из таблицы ExchangeRates
-                        with open("../db/DELETE_currency_from_ExchangeRates_base.txt", "r") as file:
-                            query = file.read()
-                            cursor.execute(query, (code,))
-                            db.commit()
+                        cursor.execute(query, (code,))
+                        db.commit()
 
-                        # открываем файл с SQL-запросом на удаление данных валюты из таблицы ExchangeRates
-                        with open("../db/DELETE_currency_from_ExchangeRates_target.txt", "r") as file:
-                            query = file.read()
-                            cursor.execute(query, (code,))
-                            db.commit()
+                        # SQL-запрос на удаление данных валюты TargetCurrency из таблицы ExchangeRates
+                        query = """DELETE FROM ExchangeRates
+                                        WHERE TargetCurrencyId IN (
+                                        SELECT Currencies.ID
+                                        FROM Currencies
+                                        INNER JOIN ExchangeRates ON Currencies.ID = ExchangeRates.TargetCurrencyId
+                                        WHERE Currencies.Code = ?
+                                        );"""
+                        cursor.execute(query, (code,))
+                        db.commit()
 
-                        # открываем файл с SQL-запросом на удаление данных валюты из таблицы Currencies
-                        with open("../db/DELETE_currency.txt", "r") as file:
-                            query = file.read()
-                            cursor.execute(query, (code,))
-                            db.commit()
+                        # SQL-запрос на удаление данных валюты из таблицы Currencies
+                        query = """DELETE FROM Currencies WHERE Code = ?"""
+                        cursor.execute(query, (code,))
+                        db.commit()
 
                 except sqlite3.IntegrityError:
                     response_code = 500
