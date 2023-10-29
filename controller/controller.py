@@ -1,19 +1,19 @@
 import sys
 import urllib
 
-sys.path.append('../service')
-sys.path.append('../dao')
-sys.path.append('../config')
-sys.path.append('../dto_response')
-sys.path.append('../view')
-sys.path.append('../db')
+# sys.path.append('../service')
+# sys.path.append('../dao')
+# sys.path.append('../config')
+# sys.path.append('../dto_response')
+# sys.path.append('../view')
+# sys.path.append('../db')
 
-from service import ExchangeService
+from service.exchange_service import ExchangeService
 from dto_response import ErrorResponse
 from dao import DaoCurrencyRepository, DaoExchangeRepository
 from http.server import BaseHTTPRequestHandler
 from http.server import HTTPServer
-from config import Config
+from config.config import Config
 from view.view import ViewToJSON
 
 
