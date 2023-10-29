@@ -3,6 +3,7 @@ from model.currency import Currency
 from dto_response.error_response import ErrorResponse
 import sqlite3
 from config.config import Config
+from controller import db_file
 
 
 class DaoCurrencyRepository(CurrencyRepository):
@@ -20,7 +21,7 @@ class DaoCurrencyRepository(CurrencyRepository):
         Либо это объект класса ErrorResponse (код ошибки и сообщение об ошибке)
         """
         try:
-            with sqlite3.connect(Config.db_file) as db:
+            with sqlite3.connect(db_file) as db:
                 cursor = db.cursor()
 
                 # открываем файл с SQL-запросом на чтение таблицы Currencies
@@ -67,7 +68,7 @@ class DaoCurrencyRepository(CurrencyRepository):
             query_data = ErrorResponse(response_code, message)
         else:
             try:
-                with sqlite3.connect("../db/database.db") as db:
+                with sqlite3.connect(db_file) as db:
                     cursor = db.cursor()
 
                     # открываем файл с SQL-запросом на чтение таблицы Currencies
@@ -119,7 +120,7 @@ class DaoCurrencyRepository(CurrencyRepository):
         :return: list
         """
         try:
-            with sqlite3.connect(Config.db_file) as db:
+            with sqlite3.connect(db_file) as db:
                 cursor = db.cursor()
 
                 # открываем файл с SQL-запросом на чтение таблицы Currencies (получение таблицы всех валют)
@@ -157,7 +158,7 @@ class DaoCurrencyRepository(CurrencyRepository):
             query_data = ErrorResponse(response_code, message)
         else:
             try:
-                with sqlite3.connect(Config.db_file) as db:
+                with sqlite3.connect(db_file) as db:
                     cursor = db.cursor()
 
                     # открываем файл с SQL-запросом на добавление новой валюты в таблицу Currencies
@@ -197,7 +198,7 @@ class DaoCurrencyRepository(CurrencyRepository):
             query_data = ErrorResponse(response_code, message)
         else:
             try:
-                with sqlite3.connect(Config.db_file) as db:
+                with sqlite3.connect(db_file) as db:
                     cursor = db.cursor()
 
                     # открываем файл с SQL-запросом на изменение данных валюты в таблицу Currencies
@@ -234,7 +235,7 @@ class DaoCurrencyRepository(CurrencyRepository):
             query_data = self.find_by_code(code)
             if isinstance(query_data, Currency):
                 try:
-                    with sqlite3.connect(Config.db_file) as db:
+                    with sqlite3.connect(db_file) as db:
                         cursor = db.cursor()
 
                         # открываем файл с SQL-запросом на удаление данных валюты из таблицы ExchangeRates

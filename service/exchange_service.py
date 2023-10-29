@@ -5,7 +5,6 @@ from dto_response.error_response import ErrorResponse
 from model.exchange_rate import ExchangeRate
 from dao.DAO_currency_repository import DaoCurrencyRepository
 
-
 class ExchangeService(DaoExchangeRepository):
     """
     Класс для выполнения бизнес-логики получения расчёта перевода определённого количества средств из одной валюты в другую

@@ -1,6 +1,10 @@
 import sys
 import urllib
 
+from pathlib import Path
+current_directory = Path.cwd()  # Получить текущую директорию (где выполняется скрипт)
+db_file = db_file = current_directory / "db" / "database.db"
+
 # sys.path.append('../service')
 # sys.path.append('../dao')
 # sys.path.append('../config')
