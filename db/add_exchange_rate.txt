@@ -1,1 +1,0 @@
-INSERT INTO ExchangeRates (BaseCurrencyId, TargetCurrencyId, rate) VALUES(?, ?, ?)

@@ -1,9 +1,0 @@
-CREATE TABLE IF NOT EXISTS ExchangeRates (
-    ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    BaseCurrencyId INTEGER NOT NULL,
-    TargetCurrencyId INTEGER NOT NULL,
-    Rate TEXT NOT NULL,
-    FOREIGN KEY (BaseCurrencyId) REFERENCES Currencies (ID),
-    FOREIGN KEY (TargetCurrencyId) REFERENCES Currencies (ID),
-    CONSTRAINT unique_ID UNIQUE (BaseCurrencyId, TargetCurrencyId)
-    )

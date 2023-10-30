@@ -24,9 +24,8 @@ class RecorderCurrencies:
 
         with sqlite3.connect("database.db") as db:
             cursor = db.cursor()
-            # открываем файл с SQL-запросом на чтение таблицы Currencies (получение таблицы всех валют)
-            with open("add_currency.txt", "r") as file:
-                query = file.read()
+            # SQL-запрос на чтение таблицы Currencies (добавление новой валюты в таблицу Currencies)
+            query = """INSERT INTO Currencies (Code, FullName, Sign) VALUES(?, ?, ?)"""
             try:
                 cursor.execute(query, (Code, FullName, Sign))
                 db.commit()

@@ -1,1 +1,0 @@
-INSERT INTO Currencies (Code, FullName, Sign) VALUES(?, ?, ?)

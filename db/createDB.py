@@ -36,9 +36,13 @@ class CreaterDB:
         """
         with sqlite3.connect("database.db") as db:
             cursor = db.cursor()
-            # открываем файл с SQL-запросом на создание таблицы Currencies
-            with open("create_db_currencies.txt", "r") as file:
-                query = file.read()
+            # SQL-запрос на создание таблицы Currencies
+            query = """CREATE TABLE IF NOT EXISTS Currencies (
+                        ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+                        Code TEXT NOT NULL UNIQUE,
+                        FullName TEXT NOT NULL,
+                        Sign TEXT NOT NULL
+                        )"""
             cursor.execute(query)
             db.commit()
 
@@ -49,9 +53,16 @@ class CreaterDB:
         """
         with sqlite3.connect("database.db") as db:
             cursor = db.cursor()
-            # открываем файл с SQL-запросом на создание таблицы ExchangeRates
-            with open("create_db_exchange_rates.txt", "r") as file:
-                query = file.read()
+            # SQL-запрос на создание таблицы ExchangeRates
+            query = """CREATE TABLE IF NOT EXISTS ExchangeRates (
+                        ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+                        BaseCurrencyId INTEGER NOT NULL,
+                        TargetCurrencyId INTEGER NOT NULL,
+                        Rate TEXT NOT NULL,
+                        FOREIGN KEY (BaseCurrencyId) REFERENCES Currencies (ID),
+                        FOREIGN KEY (TargetCurrencyId) REFERENCES Currencies (ID),
+                        CONSTRAINT unique_ID UNIQUE (BaseCurrencyId, TargetCurrencyId)
+                        )"""
             cursor.execute(query)
             db.commit()
 

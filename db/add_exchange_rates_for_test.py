@@ -24,9 +24,8 @@ class RecorderExchangeRates:
 
         with sqlite3.connect("database.db") as db:
             cursor = db.cursor()
-            # открываем файл с SQL-запросом на чтение таблицы Currencies (получение таблицы всех валют)
-            with open("add_exchange_rate.txt", "r") as file:
-                query = file.read()
+            # SQL-запрос на чтение таблицы exchangeRates (добавление нового обменного курса в таблицу exchangeRates)
+            query = """INSERT INTO ExchangeRates (BaseCurrencyId, TargetCurrencyId, rate) VALUES(?, ?, ?)"""
             try:
                 cursor.execute(query, (BaseCurrencyId, TargetCurrencyId, rate))
                 db.commit()

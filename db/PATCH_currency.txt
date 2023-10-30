@@ -1,1 +1,0 @@
-UPDATE Currencies SET (Code, FullName, Sign) = (?, ?, ?) WHERE id = ?

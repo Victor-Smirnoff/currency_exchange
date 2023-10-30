@@ -1,7 +1,0 @@
-DELETE FROM ExchangeRates
-WHERE BaseCurrencyId IN (
-    SELECT Currencies.ID
-    FROM Currencies
-    INNER JOIN ExchangeRates ON Currencies.ID = ExchangeRates.BaseCurrencyId
-    WHERE Currencies.Code = ?
-);
